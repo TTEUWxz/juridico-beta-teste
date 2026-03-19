@@ -8380,7 +8380,8 @@
             <div class="nav-label">Ferramentas</div>
             <div class="nav-item" onclick="navigate('ai',this)"><span class="nav-icon">✦</span> Assistente IA</div>
             <div class="nav-item" onclick="navigate('agente',this)"><span class="nav-icon">🤖</span> Controle do Agente
-              <span class="badge" id="agent-nav-badge" style="background:var(--green)">ON</span></div>
+              <span class="badge" id="agent-nav-badge" style="background:var(--green)">ON</span>
+            </div>
             <div class="nav-item" onclick="navigate('waconnect',this)"><span class="nav-icon">📱</span> Conectar
               WhatsApp <span class="badge red" id="wa-conn-nav-badge" style="background:var(--red)">OFF</span></div>
             <div class="nav-item" onclick="navigate('agenda',this)"><span class="nav-icon">📅</span> Agenda</div>
@@ -8725,7 +8726,8 @@
                           <div class="qr-step-circle">2</div>
                           <div>
                             <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;">Toque em
-                              <strong>⋮ → Dispositivos vinculados</strong></div>
+                              <strong>⋮ → Dispositivos vinculados</strong>
+                            </div>
                             <div style="font-size:12px;color:var(--text-muted);line-height:1.6;">No iPhone: Ajustes →
                               Dispositivos vinculados.</div>
                           </div>
@@ -8734,7 +8736,8 @@
                           <div class="qr-step-circle">3</div>
                           <div>
                             <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;">Toque em
-                              <strong>"Vincular um dispositivo"</strong></div>
+                              <strong>"Vincular um dispositivo"</strong>
+                            </div>
                             <div style="font-size:12px;color:var(--text-muted);line-height:1.6;">A câmera abrirá
                               automaticamente.</div>
                           </div>
@@ -8875,7 +8878,8 @@
                     IA</strong><br><br>Olá, Dr. Rafael! Posso ajudá-lo com:<br><br>• Redigir <strong>petições, recursos
                     e contratos</strong><br>• Analisar <strong>riscos e estratégias</strong> de casos<br>• Pesquisar
                   <strong>jurisprudência</strong> e legislação<br>• Resumir <strong>fichas coletadas</strong> pelo
-                  agente WhatsApp<br><br>Como posso ajudá-lo hoje?</div>
+                  agente WhatsApp<br><br>Como posso ajudá-lo hoje?
+                </div>
               </div>
             </div>
             <div class="ai-input-area-main">
@@ -9239,7 +9243,8 @@
               <div style="margin-top:10px;font-size:11.5px;color:var(--green);display:flex;align-items:center;gap:5px">
                 <span
                   style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>
-                Sincronizado — eventos importados</div>
+                Sincronizado — eventos importados
+              </div>
             </div>
           </div>
 
@@ -10052,6 +10057,8 @@ Preencha apenas os campos com informação real. String vazia "" para não infor
           renderConvList();
           if (!activeConvId && conversations.length) selectConv(conversations[0].id);
           addWaMobileBackBtn();
+          // FIX: Reinicia o loop de sincronização ao entrar no painel para buscar contatos imediatamente
+          if (typeof startSyncLoop === 'function') startSyncLoop();
           // FIX: Re-renderiza após 3s para capturar dados carregados de forma assíncrona
           setTimeout(() => {
             renderConvList();
@@ -10735,6 +10742,12 @@ Preencha apenas os campos com informação real. String vazia "" para não infor
         setPhaseState(1, 'active'); openPhase(1); guidePhase = 1;
       }
       waconnShowCorrectMode();
+      // FIX: Se já conectado (waConnected=true), mostra tela conectada imediatamente sem precisar clicar
+      if (typeof waConnected !== 'undefined' && waConnected) {
+        const userId = (typeof currentUser !== 'undefined' && currentUser?.id)
+          ? currentUser.id.replace(/[^a-zA-Z0-9]/g, '').substring(0, 20) : 'lexia';
+        waconnHandleConnected(evoCfg?.instance || ('lexia-' + userId));
+      }
     }
     // ── Show correct mode based on whether operator has configured server ──────────
     function waconnShowCorrectMode() {
@@ -15145,7 +15158,7 @@ Inclua: quitação mútua, devolução de documentos, ciência das providências
 
 
     // ── Simplified QR start — no step 1, goes straight to QR ────────────────────
-    function waconnStart() {
+    async function waconnStart() {
       // Use central config
       const url = EVOLUTION_URL || '';
       const key = EVOLUTION_KEY || '';
@@ -15185,6 +15198,25 @@ Inclua: quitação mútua, devolução de documentos, ciência das providências
       // Hide generate button, show QR
       const btn = document.getElementById('waconn-step1-btn');
       if (btn) btn.style.display = 'none';
+
+      // FIX: Check if already connected BEFORE showing the QR spinner
+      // If instance is already open, skip QR generation entirely
+      try {
+        const stateRes = await fetch(url + '/instance/connectionState/' + inst, {
+          headers: { 'apikey': key },
+          signal: AbortSignal.timeout(8000)
+        });
+        if (stateRes.ok) {
+          const stateData = await stateRes.json();
+          const st = stateData?.instance?.state || stateData?.state || '';
+          if (st === 'open') {
+            // Already connected — show connected screen immediately
+            waconnHandleConnected(inst);
+            if (typeof startSyncLoop === 'function') startSyncLoop();
+            return;
+          }
+        }
+      } catch (e) { /* If check fails, proceed to generate QR normally */ }
 
       waconnGenerateQR();
     }
