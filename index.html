@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<head>
-<meta charset="UTF-8">
+<!-- saved from url=(0047)file:///C:/Users/TTEUWxz/Downloads/index_6.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LexIA — Plataforma Jurídica Inteligente</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="./LexIA — Plataforma Jurídica Inteligente_files/css2" rel="stylesheet">
 <style>
   :root {
     --bg:#0a0d12; --surface:#111520; --surface2:#161c2d; --border:#1e2a45;
@@ -1757,7 +1758,165 @@
     .doc-gen-left { max-height: 140px; }
   }
 </style>
-</head>
+<style>
+/* === QUICK CONNECT MODAL === */
+#qc-overlay {
+  position:fixed;inset:0;z-index:10500;
+  background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.25s;
+}
+#qc-overlay.open { opacity:1; pointer-events:all; }
+#qc-modal {
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;width:min(480px,95vw);
+  box-shadow:0 40px 100px rgba(0,0,0,0.55);
+  animation:qcSlideIn 0.35s cubic-bezier(0.16,1,0.3,1);
+  overflow:hidden;
+}
+@keyframes qcSlideIn { from{opacity:0;transform:translateY(28px) scale(0.96);} to{opacity:1;transform:none;} }
+
+/* header */
+#qc-header {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 24px 0;
+}
+#qc-logo { display:flex;align-items:center;gap:10px; }
+#qc-logo-icon {
+  width:38px;height:38px;border-radius:10px;
+  background:linear-gradient(135deg,#128C7E,#25d366);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+}
+#qc-logo-text { font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--text); }
+#qc-logo-sub { font-size:11px;color:var(--text-muted);margin-top:1px; }
+#qc-close-btn {
+  width:32px;height:32px;border-radius:50%;border:1px solid var(--border);
+  background:transparent;color:var(--text-muted);cursor:pointer;
+  font-size:16px;display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;
+}
+#qc-close-btn:hover { border-color:var(--text-muted);color:var(--text); }
+
+/* step bar */
+#qc-steps-bar {
+  display:flex;align-items:center;gap:0;
+  padding:18px 24px 0;
+}
+.qc-step-dot {
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;font-family:'Playfair Display',serif;
+  border:2px solid var(--border);color:var(--text-dim);background:var(--surface2);
+  transition:all 0.3s;flex-shrink:0;
+}
+.qc-step-dot.active { border-color:rgba(201,168,76,0.6);background:var(--gold-dim);color:var(--gold); }
+.qc-step-dot.done { border-color:rgba(46,204,138,0.5);background:rgba(46,204,138,0.1);color:var(--green);font-size:13px; }
+.qc-step-line { flex:1;height:2px;background:var(--border);transition:background 0.3s; }
+.qc-step-line.done { background:rgba(46,204,138,0.4); }
+.qc-step-label-row { display:flex;justify-content:space-between;padding:5px 24px 0;margin-bottom:4px; }
+.qc-step-label { font-size:10px;color:var(--text-dim);letter-spacing:0.05em; }
+.qc-step-label.active { color:var(--gold); }
+
+/* body */
+#qc-body { padding:16px 24px 24px; }
+
+/* step 1 */
+#qc-step-1 .qc-field { margin-bottom:14px; }
+#qc-step-1 .qc-label {
+  font-size:10px;text-transform:uppercase;letter-spacing:0.12em;
+  color:var(--text-muted);margin-bottom:6px;display:block;
+}
+#qc-step-1 .qc-input {
+  width:100%;background:var(--bg);border:1px solid var(--border);
+  border-radius:9px;padding:11px 14px;color:var(--text);
+  font-family:'Outfit',sans-serif;font-size:13.5px;outline:none;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+#qc-step-1 .qc-input:focus { border-color:rgba(201,168,76,0.5);box-shadow:0 0 0 3px rgba(201,168,76,0.08); }
+#qc-step-1 .qc-input.err { border-color:var(--red); }
+.qc-hint { font-size:11.5px;color:var(--text-muted);margin-top:5px;line-height:1.5; }
+.qc-hint code { color:var(--gold);background:rgba(201,168,76,0.08);padding:1px 5px;border-radius:4px;font-size:11px; }
+.qc-info-box {
+  background:rgba(37,211,102,0.06);border:1px solid rgba(37,211,102,0.2);
+  border-radius:10px;padding:11px 14px;margin-bottom:16px;
+  font-size:12px;color:var(--text-muted);line-height:1.6;
+}
+.qc-info-box strong { color:var(--green); }
+
+/* primary btn */
+.qc-btn-primary {
+  width:100%;padding:13px;border:none;border-radius:10px;cursor:pointer;
+  background:var(--whatsapp);color:#000;font-family:'Outfit',sans-serif;
+  font-size:14px;font-weight:700;transition:all 0.2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.qc-btn-primary:hover { background:#20c05e;transform:translateY(-1px);box-shadow:0 8px 24px rgba(37,211,102,0.3); }
+.qc-btn-primary:disabled { opacity:0.6;cursor:not-allowed;transform:none;box-shadow:none; }
+.qc-btn-outline {
+  width:100%;padding:11px;border:1px solid var(--border);border-radius:10px;cursor:pointer;
+  background:transparent;color:var(--text-muted);font-family:'Outfit',sans-serif;
+  font-size:13px;transition:all 0.2s;margin-top:8px;
+}
+.qc-btn-outline:hover { border-color:var(--text-muted);color:var(--text); }
+.qc-btn-ghost {
+  background:transparent;border:none;color:var(--gold);cursor:pointer;
+  font-family:'Outfit',sans-serif;font-size:12px;text-decoration:underline;
+  display:block;text-align:center;margin-top:10px;
+}
+
+/* step 2 — QR */
+#qc-step-2 { text-align:center; }
+#qc-qr-box {
+  width:200px;height:200px;margin:0 auto 14px;
+  background:var(--bg);border:2px solid var(--border);
+  border-radius:14px;display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;transition:border-color 0.3s,box-shadow 0.3s;
+}
+#qc-qr-box.scanning { border-color:rgba(37,211,102,0.5);box-shadow:0 0 22px rgba(37,211,102,0.12); }
+#qc-qr-box.done { border-color:var(--green); }
+#qc-qr-box.error { border-color:rgba(224,90,90,0.5); }
+.qc-scan-line {
+  position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--green),transparent);
+  animation:scanLine 2s infinite linear;display:none;
+}
+#qc-qr-box.scanning .qc-scan-line { display:block; }
+#qc-timer-bar { height:4px;background:var(--border);border-radius:4px;overflow:hidden;width:200px;margin:0 auto 6px; }
+#qc-timer-fill { height:100%;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:4px;transition:width 1s linear; }
+#qc-timer-text { font-size:11.5px;color:var(--text-muted);margin-bottom:14px; }
+#qc-step-2 .qc-instructions {
+  background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 16px;text-align:left;margin-bottom:14px;
+}
+#qc-step-2 .qc-instructions ol { padding-left:18px;margin:0; }
+#qc-step-2 .qc-instructions li { font-size:12.5px;color:var(--text-muted);line-height:1.8; }
+#qc-step-2 .qc-instructions li strong { color:var(--text); }
+
+/* step 3 — success */
+#qc-step-3 { text-align:center;padding:12px 0; }
+#qc-success-icon { font-size:56px;margin-bottom:12px;animation:qcBounce 0.5s ease; }
+@keyframes qcBounce { 0%{transform:scale(0.5);opacity:0;} 70%{transform:scale(1.15);} 100%{transform:scale(1);opacity:1;} }
+#qc-success-name { font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:4px; }
+#qc-success-phone { font-size:13px;color:var(--green);margin-bottom:20px; }
+.qc-stat-row { display:flex;gap:12px;justify-content:center;margin-bottom:20px; }
+.qc-stat-item { background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 18px;text-align:center; }
+.qc-stat-val { font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--green); }
+.qc-stat-lbl { font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em; }
+
+
+
+/* error msg */
+#qc-err-msg { font-size:12px;color:var(--red);margin-top:8px;min-height:18px; }
+
+/* spinner */
+.qc-spinner {
+  width:20px;height:20px;border-radius:50%;
+  border:3px solid rgba(0,0,0,0.2);border-top-color:#000;
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style></head>
 <body>
 
 <!-- AUTH OVERLAY -->
@@ -1775,7 +1934,7 @@
         <!-- top bar: logo + já tenho conta -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:48px;width:100%;">
           <div>
-            <div style="font-family:'Playfair Display',serif;font-size:26px;font-weight:600;color:var(--gold);letter-spacing:0.04em;">⚖ LexIA</div>
+            <div style="font-family:&#39;Playfair Display&#39;,serif;font-size:26px;font-weight:600;color:var(--gold);letter-spacing:0.04em;">⚖ LexIA</div>
             <div style="font-size:9px;color:var(--text-muted);letter-spacing:0.18em;text-transform:uppercase">Plataforma Jurídica Inteligente</div>
           </div>
           <div style="display:flex;align-items:center;gap:10px;">
@@ -1783,14 +1942,14 @@
               display:flex;align-items:center;gap:8px;
               background:linear-gradient(135deg,rgba(46,204,138,0.15),rgba(46,204,138,0.08));
               border:1px solid rgba(46,204,138,0.4);
-              color:var(--green);font-family:'Outfit',sans-serif;
+              color:var(--green);font-family:&#39;Outfit&#39;,sans-serif;
               font-size:12.5px;font-weight:600;
               padding:9px 18px;border-radius:8px;cursor:pointer;
               transition:all 0.2s;letter-spacing:0.02em;">
               <span style="width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.5s infinite;flex-shrink:0"></span>
               Acesso de Teste — Dev
             </button>
-            <button class="auth-btn auth-btn-outline" style="width:auto;padding:9px 22px" onclick="showScreen('screen-login')">Já tenho conta — Entrar →</button>
+            <button class="auth-btn auth-btn-outline" style="width:auto;padding:9px 22px" onclick="showScreen(&#39;screen-login&#39;)">Já tenho conta — Entrar →</button>
           </div>
         </div>
 
@@ -1801,8 +1960,8 @@
         </div>
 
         <div class="billing-toggle">
-          <div class="billing-opt active" id="bill-monthly" onclick="setBilling('monthly')">Mensal</div>
-          <div class="billing-opt" id="bill-annual" onclick="setBilling('annual')">Anual <span class="billing-save">-20%</span></div>
+          <div class="billing-opt active" id="bill-monthly" onclick="setBilling(&#39;monthly&#39;)">Mensal</div>
+          <div class="billing-opt" id="bill-annual" onclick="setBilling(&#39;annual&#39;)">Anual <span class="billing-save">-20%</span></div>
         </div>
 
         <div class="plans-grid">
@@ -1825,7 +1984,7 @@
               <li><span class="feat-x">✗</span> Webhook / API</li>
               <li><span class="feat-x">✗</span> Relatórios avançados</li>
             </ul>
-            <button class="plan-cta plan-cta-outline" onclick="selectPlan('starter')">Começar grátis por 14 dias</button>
+            <button class="plan-cta plan-cta-outline" onclick="selectPlan(&#39;starter&#39;)">Começar grátis por 14 dias</button>
           </div>
 
           <!-- PRO -->
@@ -1848,7 +2007,7 @@
               <li class="active"><span class="feat-check">✓</span> Webhook / API</li>
               <li><span class="feat-x">✗</span> White-label</li>
             </ul>
-            <button class="plan-cta plan-cta-gold" onclick="selectPlan('pro')">Começar grátis por 14 dias</button>
+            <button class="plan-cta plan-cta-gold" onclick="selectPlan(&#39;pro&#39;)">Começar grátis por 14 dias</button>
           </div>
 
           <!-- ENTERPRISE -->
@@ -1870,7 +2029,7 @@
               <li class="active"><span class="feat-check">✓</span> SLA contratual</li>
               <li class="active"><span class="feat-check">✓</span> Treinamento da equipe</li>
             </ul>
-            <button class="plan-cta plan-cta-outline" onclick="selectPlan('enterprise')">Falar com comercial</button>
+            <button class="plan-cta plan-cta-outline" onclick="selectPlan(&#39;enterprise&#39;)">Falar com comercial</button>
           </div>
         </div>
 
@@ -1889,7 +2048,7 @@
   ══════════════════════════════ -->
   <div class="auth-screen" id="screen-register">
     <div class="login-card">
-      <div class="auth-back" onclick="showScreen('screen-pricing')">← Ver planos</div>
+      <div class="auth-back" onclick="showScreen(&#39;screen-pricing&#39;)">← Ver planos</div>
       <div class="login-logo">⚖ LexIA</div>
       <div id="reg-plan-badge" class="auth-plan-badge">⭐ Plano Pro — 14 dias grátis</div>
       <div class="auth-title">Criar conta</div>
@@ -1911,8 +2070,8 @@
       <div class="auth-field">
         <label class="auth-label">Senha</label>
         <div class="pw-toggle">
-          <input class="auth-input" id="reg-pw" type="password" placeholder="Mínimo 8 caracteres" onkeydown="if(event.key==='Enter')doRegister()">
-          <button class="pw-eye" onclick="togglePw('reg-pw',this)">👁</button>
+          <input class="auth-input" id="reg-pw" type="password" placeholder="Mínimo 8 caracteres" onkeydown="if(event.key===&#39;Enter&#39;)doRegister()">
+          <button class="pw-eye" onclick="togglePw(&#39;reg-pw&#39;,this)">👁</button>
         </div>
         <div class="auth-error" id="reg-pw-err">Senha deve ter ao menos 8 caracteres</div>
       </div>
@@ -1921,9 +2080,9 @@
       <div style="margin-bottom:18px">
         <label class="auth-label" style="margin-bottom:8px;display:block">Plano selecionado</label>
         <div class="plan-chip-row" id="reg-plan-chips">
-          <div class="plan-chip" id="chip-starter" onclick="chooseRegPlan('starter',this)">Starter<br><small style="font-size:10px;opacity:0.7">R$197/mês</small></div>
-          <div class="plan-chip selected" id="chip-pro" onclick="chooseRegPlan('pro',this)">Pro<br><small style="font-size:10px;opacity:0.7">R$397/mês</small></div>
-          <div class="plan-chip" id="chip-enterprise" onclick="chooseRegPlan('enterprise',this)">Enterprise<br><small style="font-size:10px;opacity:0.7">R$897/mês</small></div>
+          <div class="plan-chip" id="chip-starter" onclick="chooseRegPlan(&#39;starter&#39;,this)">Starter<br><small style="font-size:10px;opacity:0.7">R$197/mês</small></div>
+          <div class="plan-chip selected" id="chip-pro" onclick="chooseRegPlan(&#39;pro&#39;,this)">Pro<br><small style="font-size:10px;opacity:0.7">R$397/mês</small></div>
+          <div class="plan-chip" id="chip-enterprise" onclick="chooseRegPlan(&#39;enterprise&#39;,this)">Enterprise<br><small style="font-size:10px;opacity:0.7">R$897/mês</small></div>
         </div>
       </div>
 
@@ -1933,7 +2092,7 @@
       </button>
 
       <div class="auth-divider">ou</div>
-      <button class="auth-btn auth-btn-outline" onclick="showScreen('screen-login')">Já tenho conta — Entrar</button>
+      <button class="auth-btn auth-btn-outline" onclick="showScreen(&#39;screen-login&#39;)">Já tenho conta — Entrar</button>
 
       <div class="auth-footer-text" style="margin-top:14px;font-size:11px;line-height:1.6">
         Ao criar sua conta você concorda com os <span class="auth-link">Termos de Uso</span> e a <span class="auth-link">Política de Privacidade</span>.
@@ -1946,7 +2105,7 @@
   ══════════════════════════════ -->
   <div class="auth-screen" id="screen-login">
     <div class="login-card">
-      <div class="auth-back" onclick="showScreen('screen-pricing')">← Ver planos</div>
+      <div class="auth-back" onclick="showScreen(&#39;screen-pricing&#39;)">← Ver planos</div>
       <div class="login-logo">⚖ LexIA</div>
       <div class="login-tagline">Plataforma Jurídica Inteligente</div>
       <div class="auth-title">Bem-vindo de volta</div>
@@ -1954,20 +2113,20 @@
 
       <div class="auth-field">
         <label class="auth-label">E-mail</label>
-        <input class="auth-input" id="login-email" type="email" placeholder="seu@escritorio.com.br" onkeydown="if(event.key==='Enter')doLogin()">
+        <input class="auth-input" id="login-email" type="email" placeholder="seu@escritorio.com.br" onkeydown="if(event.key===&#39;Enter&#39;)doLogin()">
         <div class="auth-error" id="login-email-err">E-mail inválido</div>
       </div>
       <div class="auth-field">
         <label class="auth-label">Senha</label>
         <div class="pw-toggle">
-          <input class="auth-input" id="login-pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
-          <button class="pw-eye" onclick="togglePw('login-pw',this)">👁</button>
+          <input class="auth-input" id="login-pw" type="password" placeholder="••••••••" onkeydown="if(event.key===&#39;Enter&#39;)doLogin()">
+          <button class="pw-eye" onclick="togglePw(&#39;login-pw&#39;,this)">👁</button>
         </div>
         <div class="auth-error" id="login-pw-err">E-mail ou senha incorretos</div>
       </div>
 
       <div style="display:flex;justify-content:flex-end;margin-bottom:18px">
-        <span class="auth-link" style="font-size:12px" onclick="showScreen('screen-forgot')">Esqueceu a senha?</span>
+        <span class="auth-link" style="font-size:12px" onclick="showScreen(&#39;screen-forgot&#39;)">Esqueceu a senha?</span>
       </div>
 
       <button class="auth-btn auth-btn-gold" id="login-btn" onclick="doLogin()">
@@ -1979,7 +2138,7 @@
 
       <button class="auth-btn" onclick="demoLogin()" style="
         background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);
-        font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;
+        font-family:&#39;Outfit&#39;,sans-serif;font-size:13px;font-weight:600;
         display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;
         border-radius:9px;cursor:pointer;transition:all 0.2s;margin-bottom:0;">
         🔧 Entrar em modo demonstração
@@ -1990,17 +2149,17 @@
         <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:8px;font-weight:600">Credenciais de demonstração</div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
           <span style="font-size:11px;color:var(--text-muted)">E-mail</span>
-          <code onclick="document.getElementById('login-email').value='demo@lexia.com.br'" style="font-size:11.5px;color:var(--gold);background:var(--gold-dim);padding:2px 8px;border-radius:5px;cursor:pointer"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2c484941436c404954454d024f4341024e5e">[email&#160;protected]</a></code>
+          <code onclick="document.getElementById(&#39;login-email&#39;).value=&#39;demo@lexia.com.br&#39;" style="font-size:11.5px;color:var(--gold);background:var(--gold-dim);padding:2px 8px;border-radius:5px;cursor:pointer"><a href="file:///C:/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2c484941436c404954454d024f4341024e5e">[email&nbsp;protected]</a></code>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center">
           <span style="font-size:11px;color:var(--text-muted)">Senha</span>
-          <code onclick="document.getElementById('login-pw').value='demo1234'" style="font-size:11.5px;color:var(--gold);background:var(--gold-dim);padding:2px 8px;border-radius:5px;cursor:pointer">demo1234</code>
+          <code onclick="document.getElementById(&#39;login-pw&#39;).value=&#39;demo1234&#39;" style="font-size:11.5px;color:var(--gold);background:var(--gold-dim);padding:2px 8px;border-radius:5px;cursor:pointer">demo1234</code>
         </div>
       </div>
 
       <div class="auth-footer-text" style="margin-top:16px">
         Não tem conta?
-        <span class="auth-link" onclick="showScreen('screen-pricing')">Escolher um plano →</span>
+        <span class="auth-link" onclick="showScreen(&#39;screen-pricing&#39;)">Escolher um plano →</span>
       </div>
     </div>
   </div>
@@ -2010,7 +2169,7 @@
   ══════════════════════════════ -->
   <div class="auth-screen" id="screen-forgot">
     <div class="login-card">
-      <div class="auth-back" onclick="showScreen('screen-login')">← Voltar ao login</div>
+      <div class="auth-back" onclick="showScreen(&#39;screen-login&#39;)">← Voltar ao login</div>
       <div class="login-logo">⚖ LexIA</div>
       <div class="auth-title">Redefinir senha</div>
       <div class="auth-sub">Informe seu e-mail e enviaremos as instruções para criar uma nova senha.</div>
@@ -2029,13 +2188,13 @@
 </div><!-- /auth-overlay -->
 
 <!-- APP LAYOUT -->
-<div id="app-layout">
+<div id="app-layout" style="display: none;">
 <!-- TRIAL BANNER (inside app) -->
 <div id="trial-banner" style="flex-shrink:0;">
   <span>⏱</span>
   <span>Você está no período de teste gratuito — <strong>11 dias restantes</strong> no plano <strong>Pro</strong></span>
   <button class="trial-cta" onclick="showPricingUpgrade()">Assinar agora</button>
-  <button class="trial-close" onclick="this.parentElement.style.display='none'" title="Fechar">×</button>
+  <button class="trial-close" onclick="this.parentElement.style.display=&#39;none&#39;" title="Fechar">×</button>
 </div>
 <div id="app-inner">
 <aside class="sidebar">
@@ -2046,21 +2205,21 @@
   <nav class="nav">
     <div class="nav-section">
       <div class="nav-label">Principal</div>
-      <div class="nav-item active" onclick="navigate('dashboard',this)"><span class="nav-icon">📊</span> Dashboard</div>
-      <div class="nav-item" onclick="navigate('cases',this)"><span class="nav-icon">📁</span> Casos <span class="badge" id="cases-nav-badge" style="display:none">0</span></div>
-      <div class="nav-item" onclick="navigate('whatsapp',this)"><span class="nav-icon">💬</span> WhatsApp <span class="badge green" id="nav-badge" style="display:none">0</span></div>
+      <div class="nav-item active" onclick="navigate(&#39;dashboard&#39;,this)"><span class="nav-icon">📊</span> Dashboard</div>
+      <div class="nav-item" onclick="navigate(&#39;cases&#39;,this)"><span class="nav-icon">📁</span> Casos <span class="badge" id="cases-nav-badge" style="display:none">0</span></div>
+      <div class="nav-item" onclick="navigate(&#39;whatsapp&#39;,this)"><span class="nav-icon">💬</span> WhatsApp <span class="badge green" id="nav-badge" style="display:none">0</span></div>
     </div>
     <div class="nav-section">
       <div class="nav-label">Ferramentas</div>
-      <div class="nav-item" onclick="navigate('ai',this)"><span class="nav-icon">✦</span> Assistente IA</div>
-      <div class="nav-item" onclick="navigate('agente',this)"><span class="nav-icon">🤖</span> Controle do Agente <span class="badge" id="agent-nav-badge" style="background:var(--green)">ON</span></div>
-      <div class="nav-item" onclick="navigate('waconnect',this)"><span class="nav-icon">📱</span> Conectar WhatsApp <span class="badge red" id="wa-conn-nav-badge" style="background:var(--red)">OFF</span></div>
-      <div class="nav-item" onclick="navigate('agenda',this)"><span class="nav-icon">📅</span> Agenda</div>
-      <div class="nav-item" onclick="navigate('docs',this)"><span class="nav-icon">📜</span> Documentos</div>
+      <div class="nav-item" onclick="navigate(&#39;ai&#39;,this)"><span class="nav-icon">✦</span> Assistente IA</div>
+      <div class="nav-item" onclick="navigate(&#39;agente&#39;,this)"><span class="nav-icon">🤖</span> Controle do Agente <span class="badge" id="agent-nav-badge" style="background:var(--green)">ON</span></div>
+      <div class="nav-item" onclick="navigate(&#39;waconnect&#39;,this)"><span class="nav-icon">📱</span> Conectar WhatsApp <span class="badge red" id="wa-conn-nav-badge" style="background:var(--red)">OFF</span></div>
+      <div class="nav-item" onclick="navigate(&#39;agenda&#39;,this)"><span class="nav-icon">📅</span> Agenda</div>
+      <div class="nav-item" onclick="navigate(&#39;docs&#39;,this)"><span class="nav-icon">📜</span> Documentos</div>
     </div>
     <div class="nav-section">
       <div class="nav-label">Conta</div>
-      <div class="nav-item" onclick="navigate('settings',this)"><span class="nav-icon">⚙</span> Configurações</div>
+      <div class="nav-item" onclick="navigate(&#39;settings&#39;,this)"><span class="nav-icon">⚙</span> Configurações</div>
     </div>
   </nav>
   <div class="user-bar">
@@ -2069,7 +2228,7 @@
       <div class="user-name">Dr.(a) Advogado(a)</div>
       <div class="user-role">Advogado Sênior</div>
     </div>
-    <button onclick="signOut()" title="Sair da conta" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0;transition:color 0.2s;border-radius:6px" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text-dim)'">⏻</button>
+    <button onclick="signOut()" title="Sair da conta" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0;transition:color 0.2s;border-radius:6px" onmouseover="this.style.color=&#39;var(--red)&#39;" onmouseout="this.style.color=&#39;var(--text-dim)&#39;">⏻</button>
   </div>
 </aside>
 
@@ -2079,7 +2238,7 @@
     <div class="topbar-title" id="topbar-title">Dashboard</div>
     <div class="topbar-actions">
       <button class="btn btn-outline" onclick="openModal()">+ Novo Caso</button>
-      <button class="btn btn-gold" onclick="navigate('ai',document.querySelectorAll('.nav-item')[3])">✦ Assistente IA</button>
+      <button class="btn btn-gold" onclick="navigate(&#39;ai&#39;,document.querySelectorAll(&#39;.nav-item&#39;)[3])">✦ Assistente IA</button>
     </div>
   </div>
   <div class="content">
@@ -2115,7 +2274,7 @@
           <div class="wa-nc-step"><div class="wa-nc-step-num">2</div> Insira as credenciais no LexIA</div>
           <div class="wa-nc-step"><div class="wa-nc-step-num">3</div> Ative a conexão com a Meta</div>
         </div>
-        <button class="wa-nc-btn" onclick="navigate('waconnect', document.querySelectorAll('.nav-item')[5])">
+        <button class="wa-nc-btn" onclick="navigate(&#39;waconnect&#39;, document.querySelectorAll(&#39;.nav-item&#39;)[5])">
           <span style="font-size:18px">📲</span> Ir para Configuração do WhatsApp
         </button>
       </div>
@@ -2150,7 +2309,7 @@
           <div class="ai-toggle-wrap">
             <span class="toggle-label">IA</span>
             <label class="toggle-switch">
-              <input type="checkbox" id="ai-toggle-check" checked onchange="toggleAI(this)">
+              <input type="checkbox" id="ai-toggle-check" checked="" onchange="toggleAI(this)">
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -2163,9 +2322,7 @@
             <span>👨‍💼</span> Modo advogado — você está respondendo. IA pausada nesta conversa.
           </div>
           <div class="input-row">
-            <textarea class="wa-textarea" id="wa-input" rows="1"
-              placeholder="Simule mensagem do cliente (Enter) ou responda manualmente..."
-              oninput="autoResize(this)" onkeydown="handleWaKey(event)"></textarea>
+            <textarea class="wa-textarea" id="wa-input" rows="1" placeholder="Simule mensagem do cliente (Enter) ou responda manualmente..." oninput="autoResize(this)" onkeydown="handleWaKey(event)"></textarea>
             <button class="send-btn" onclick="sendMessage()">➤</button>
           </div>
         </div>
@@ -2204,7 +2361,7 @@
           <button class="ws-btn ws-btn-outline" onclick="exportFicha()">⬇ Exportar Ficha PDF</button>
           <button class="ws-btn ws-btn-doc" onclick="openDocGenModal()">📝 Gerar Contrato / Procuração</button>
           <button class="ws-btn ws-btn-drive" onclick="openGDriveModal()">☁ Enviar Docs ao Google Drive</button>
-          <button class="ws-btn" id="ws-btn-vercase" style="display:none;margin-top:8px;background:rgba(46,204,138,0.12);border:1px solid rgba(46,204,138,0.25);color:var(--green);font-family:'Outfit',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;border-radius:7px;padding:9px;width:100%">📁 Ver Caso Criado pela IA</button>
+          <button class="ws-btn" id="ws-btn-vercase" style="display:none;margin-top:8px;background:rgba(46,204,138,0.12);border:1px solid rgba(46,204,138,0.25);color:var(--green);font-family:&#39;Outfit&#39;,sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;border-radius:7px;padding:9px;width:100%">📁 Ver Caso Criado pela IA</button>
         </div>
       </div>
       </div><!-- /wa-connected-content -->
@@ -2218,17 +2375,17 @@
         <button class="btn btn-gold" onclick="openModal()">+ Novo Caso</button>
       </div>
       <div class="filter-chips" id="cases-filter-chips">
-        <span class="chip active" onclick="filterChip(this,'')">Todos</span>
-        <span class="chip" onclick="filterChip(this,'triagem')">🤖 Triagem IA</span>
-        <span class="chip" onclick="filterChip(this,'ativo')">Ativo</span>
-        <span class="chip" onclick="filterChip(this,'pendente')">Pendente</span>
-        <span class="chip" onclick="filterChip(this,'encerrado')">Encerrado</span>
+        <span class="chip active" onclick="filterChip(this,&#39;&#39;)">Todos</span>
+        <span class="chip" onclick="filterChip(this,&#39;triagem&#39;)">🤖 Triagem IA</span>
+        <span class="chip" onclick="filterChip(this,&#39;ativo&#39;)">Ativo</span>
+        <span class="chip" onclick="filterChip(this,&#39;pendente&#39;)">Pendente</span>
+        <span class="chip" onclick="filterChip(this,&#39;encerrado&#39;)">Encerrado</span>
       </div>
       <!-- Triagem pending alert -->
       <div id="triagem-alert" style="display:none;margin:0 24px 0;padding:11px 16px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:10px;display:none;align-items:center;gap:12px;font-size:13px;color:var(--text-muted);flex-shrink:0;">
         <span style="font-size:18px">🤖</span>
         <span>A IA criou <strong id="triagem-count" style="color:var(--gold)">0</strong> caso(s) aguardando sua revisão e ativação.</span>
-        <button onclick="filterChip(document.querySelector('.chip[onclick*=triagem]'),  'triagem')" style="margin-left:auto;background:var(--gold);color:#000;border:none;border-radius:7px;padding:6px 14px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">Ver Triagem IA →</button>
+        <button onclick="filterChip(document.querySelector(&#39;.chip[onclick*=triagem]&#39;),  &#39;triagem&#39;)" style="margin-left:auto;background:var(--gold);color:#000;border:none;border-radius:7px;padding:6px 14px;font-family:&#39;Outfit&#39;,sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">Ver Triagem IA →</button>
       </div>
       <div class="cases-grid" id="cases-grid">
         <!-- rendered by JS -->
@@ -2259,7 +2416,7 @@
           <div style="display:flex;align-items:center;gap:16px;padding:22px 26px;border-bottom:1px solid var(--border);">
             <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#128C7E,#25d366);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">💬</div>
             <div style="flex:1">
-              <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:700;">Conectar via QR Code</div>
+              <div style="font-family:&#39;Playfair Display&#39;,serif;font-size:17px;font-weight:700;">Conectar via QR Code</div>
               <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Escaneie com o WhatsApp para vincular seu número ao LexIA</div>
             </div>
             <div id="waconnect-status-pill" style="display:flex;align-items:center;gap:7px;background:rgba(224,90,90,0.1);border:1px solid rgba(224,90,90,0.25);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--red);">
@@ -2332,17 +2489,14 @@
                   <div id="waconn-timer-fill" style="height:100%;width:100%;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:4px;transition:width 1s linear;"></div>
                 </div>
                 <div id="waconn-timer-text" style="font-size:11.5px;color:var(--text-muted);text-align:center;min-height:18px;"></div>
-                <button id="waconn-step1-btn" onclick="waconnStart()"
-                  style="width:230px;padding:14px;background:var(--whatsapp);border:none;border-radius:12px;color:#000;font-family:'Outfit',sans-serif;font-size:14.5px;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 6px 24px rgba(37,211,102,0.28);">
+                <button id="waconn-step1-btn" onclick="waconnStart()" style="width:230px;padding:14px;background:var(--whatsapp);border:none;border-radius:12px;color:#000;font-family:&#39;Outfit&#39;,sans-serif;font-size:14.5px;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 6px 24px rgba(37,211,102,0.28);">
                   <span style="font-size:18px;">📱</span>
                   <span id="waconn-step1-label">Gerar QR Code</span>
                 </button>
-                <button id="waconn-renew-btn" onclick="waconnGenerateQR()"
-                  style="display:none;width:230px;padding:12px;background:var(--whatsapp);border:none;border-radius:10px;color:#000;font-family:'Outfit',sans-serif;font-size:13.5px;font-weight:700;cursor:pointer;">
+                <button id="waconn-renew-btn" onclick="waconnGenerateQR()" style="display:none;width:230px;padding:12px;background:var(--whatsapp);border:none;border-radius:10px;color:#000;font-family:&#39;Outfit&#39;,sans-serif;font-size:13.5px;font-weight:700;cursor:pointer;">
                   🔄 Renovar QR Code
                 </button>
-                <button onclick="waconnDemo()"
-                  style="width:230px;padding:10px;background:rgba(37,211,102,0.07);border:1px solid rgba(37,211,102,0.2);border-radius:10px;color:var(--green);font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">
+                <button onclick="waconnDemo()" style="width:230px;padding:10px;background:rgba(37,211,102,0.07);border:1px solid rgba(37,211,102,0.2);border-radius:10px;color:var(--green);font-family:&#39;Outfit&#39;,sans-serif;font-size:12px;font-weight:600;cursor:pointer;">
                   🔧 Simular conexão (demo)
                 </button>
               </div>
@@ -2508,7 +2662,7 @@
                 <input type="time" class="schedule-time-input" value="18:00">
               </div>
               <div class="schedule-disabled-label" id="off-seg">Desativado</div>
-              <label class="big-toggle"><input type="checkbox" checked onchange="toggleScheduleDay('seg',this)"><span class="big-slider"></span></label>
+              <label class="big-toggle"><input type="checkbox" checked="" onchange="toggleScheduleDay(&#39;seg&#39;,this)"><span class="big-slider"></span></label>
             </div>
             <div class="schedule-row" id="sched-ter">
               <div class="day-badge active" id="badge-ter">TER</div>
@@ -2518,7 +2672,7 @@
                 <input type="time" class="schedule-time-input" value="18:00">
               </div>
               <div class="schedule-disabled-label" id="off-ter">Desativado</div>
-              <label class="big-toggle"><input type="checkbox" checked onchange="toggleScheduleDay('ter',this)"><span class="big-slider"></span></label>
+              <label class="big-toggle"><input type="checkbox" checked="" onchange="toggleScheduleDay(&#39;ter&#39;,this)"><span class="big-slider"></span></label>
             </div>
             <div class="schedule-row" id="sched-qua">
               <div class="day-badge active" id="badge-qua">QUA</div>
@@ -2528,7 +2682,7 @@
                 <input type="time" class="schedule-time-input" value="18:00">
               </div>
               <div class="schedule-disabled-label" id="off-qua">Desativado</div>
-              <label class="big-toggle"><input type="checkbox" checked onchange="toggleScheduleDay('qua',this)"><span class="big-slider"></span></label>
+              <label class="big-toggle"><input type="checkbox" checked="" onchange="toggleScheduleDay(&#39;qua&#39;,this)"><span class="big-slider"></span></label>
             </div>
             <div class="schedule-row" id="sched-qui">
               <div class="day-badge active" id="badge-qui">QUI</div>
@@ -2538,7 +2692,7 @@
                 <input type="time" class="schedule-time-input" value="18:00">
               </div>
               <div class="schedule-disabled-label" id="off-qui">Desativado</div>
-              <label class="big-toggle"><input type="checkbox" checked onchange="toggleScheduleDay('qui',this)"><span class="big-slider"></span></label>
+              <label class="big-toggle"><input type="checkbox" checked="" onchange="toggleScheduleDay(&#39;qui&#39;,this)"><span class="big-slider"></span></label>
             </div>
             <div class="schedule-row" id="sched-sex">
               <div class="day-badge active" id="badge-sex">SEX</div>
@@ -2548,7 +2702,7 @@
                 <input type="time" class="schedule-time-input" value="17:00">
               </div>
               <div class="schedule-disabled-label" id="off-sex">Desativado</div>
-              <label class="big-toggle"><input type="checkbox" checked onchange="toggleScheduleDay('sex',this)"><span class="big-slider"></span></label>
+              <label class="big-toggle"><input type="checkbox" checked="" onchange="toggleScheduleDay(&#39;sex&#39;,this)"><span class="big-slider"></span></label>
             </div>
             <div class="schedule-row disabled" id="sched-sab">
               <div class="day-badge inactive" id="badge-sab">SAB</div>
@@ -2558,7 +2712,7 @@
                 <input type="time" class="schedule-time-input" value="12:00">
               </div>
               <div class="schedule-disabled-label show" id="off-sab">Desativado</div>
-              <label class="big-toggle"><input type="checkbox" onchange="toggleScheduleDay('sab',this)"><span class="big-slider"></span></label>
+              <label class="big-toggle"><input type="checkbox" onchange="toggleScheduleDay(&#39;sab&#39;,this)"><span class="big-slider"></span></label>
             </div>
             <div class="schedule-row disabled" id="sched-dom">
               <div class="day-badge inactive" id="badge-dom">DOM</div>
@@ -2568,7 +2722,7 @@
                 <input type="time" class="schedule-time-input" value="13:00">
               </div>
               <div class="schedule-disabled-label show" id="off-dom">Desativado</div>
-              <label class="big-toggle"><input type="checkbox" onchange="toggleScheduleDay('dom',this)"><span class="big-slider"></span></label>
+              <label class="big-toggle"><input type="checkbox" onchange="toggleScheduleDay(&#39;dom&#39;,this)"><span class="big-slider"></span></label>
             </div>
           </div>
         </div>
@@ -2614,19 +2768,19 @@
                 <div class="agent-toggle-info">
                   <div class="agent-toggle-name">Coleta automática de dados</div>
                 </div>
-                <label class="big-toggle"><input type="checkbox" checked><span class="big-slider"></span></label>
+                <label class="big-toggle"><input type="checkbox" checked=""><span class="big-slider"></span></label>
               </div>
               <div class="agent-toggle-row">
                 <div class="agent-toggle-info">
                   <div class="agent-toggle-name">Tirar dúvidas jurídicas básicas</div>
                 </div>
-                <label class="big-toggle"><input type="checkbox" checked><span class="big-slider"></span></label>
+                <label class="big-toggle"><input type="checkbox" checked=""><span class="big-slider"></span></label>
               </div>
               <div class="agent-toggle-row">
                 <div class="agent-toggle-info">
                   <div class="agent-toggle-name">Alertar advogado em urgências</div>
                 </div>
-                <label class="big-toggle"><input type="checkbox" checked><span class="big-slider"></span></label>
+                <label class="big-toggle"><input type="checkbox" checked=""><span class="big-slider"></span></label>
               </div>
               <div class="agent-toggle-row">
                 <div class="agent-toggle-info">
@@ -2659,7 +2813,7 @@
         </div>
 
       </div>
-    </div>
+    </main></div>
 
     <!-- AGENDA PANEL -->
     <div class="panel" id="panel-agenda">
@@ -2696,7 +2850,7 @@
           <div class="gcal-card" id="gcal-card">
             <div class="gcal-header">
               <div class="gcal-logo">
-                <svg width="22" height="22" viewBox="0 0 48 48"><rect x="6" y="6" width="36" height="36" rx="3" fill="#fff" stroke="#dadce0" stroke-width="2"/><rect x="6" y="14" width="36" height="2" fill="#dadce0"/><rect x="14" y="6" width="2" height="8" rx="1" fill="#5f6368"/><rect x="32" y="6" width="2" height="8" rx="1" fill="#5f6368"/><text x="24" y="34" text-anchor="middle" font-size="14" font-weight="700" fill="#1a73e8" font-family="Arial">G</text></svg>
+                <svg width="22" height="22" viewBox="0 0 48 48"><rect x="6" y="6" width="36" height="36" rx="3" fill="#fff" stroke="#dadce0" stroke-width="2"></rect><rect x="6" y="14" width="36" height="2" fill="#dadce0"></rect><rect x="14" y="6" width="2" height="8" rx="1" fill="#5f6368"></rect><rect x="32" y="6" width="2" height="8" rx="1" fill="#5f6368"></rect><text x="24" y="34" text-anchor="middle" font-size="14" font-weight="700" fill="#1a73e8" font-family="Arial">G</text></svg>
               </div>
               <div class="gcal-title-wrap">
                 <div class="gcal-title">Google Agenda</div>
@@ -2710,9 +2864,9 @@
                 <label class="evo-label">Client ID (Google Cloud Console)</label>
                 <input class="evo-input" id="gcal-client-id" placeholder="xxxx.apps.googleusercontent.com" style="font-size:11.5px">
               </div>
-              <div class="gcal-hint">Crie um projeto em <a href="https://console.cloud.google.com" target="_blank" style="color:var(--blue)">console.cloud.google.com</a>, ative a Calendar API e adicione <code style="color:var(--gold);font-size:10px">http://localhost</code> como origem autorizada.</div>
+              <div class="gcal-hint">Crie um projeto em <a href="https://console.cloud.google.com/" target="_blank" style="color:var(--blue)">console.cloud.google.com</a>, ative a Calendar API e adicione <code style="color:var(--gold);font-size:10px">http://localhost</code> como origem autorizada.</div>
               <button class="gcal-connect-btn" onclick="connectGoogleCalendar()">
-                <svg width="16" height="16" viewBox="0 0 48 48" style="margin-right:6px"><path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 48 48" style="margin-right:6px"><path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"></path></svg>
                 Conectar com Google
               </button>
             </div>
@@ -2721,7 +2875,7 @@
                 <div class="gcal-account-avatar" id="gcal-avatar">G</div>
                 <div>
                   <div style="font-size:13px;font-weight:500" id="gcal-account-name">Conta Google</div>
-                  <div style="font-size:11px;color:var(--text-muted)" id="gcal-account-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bcd9d1ddd5d0fcdbd1ddd5d092dfd3d1">[email&#160;protected]</a></div>
+                  <div style="font-size:11px;color:var(--text-muted)" id="gcal-account-email"><a href="file:///C:/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bcd9d1ddd5d0fcdbd1ddd5d092dfd3d1">[email&nbsp;protected]</a></div>
                 </div>
                 <button onclick="disconnectGoogleCalendar()" style="margin-left:auto;background:none;border:none;color:var(--text-dim);font-size:11.5px;cursor:pointer;padding:4px 8px;border-radius:6px;border:1px solid var(--border)">Desconectar</button>
               </div>
@@ -2739,12 +2893,12 @@
           <div class="agenda-filter-card">
             <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.13em;color:var(--text-dim);margin-bottom:10px">Filtrar por tipo</div>
             <div class="agenda-type-filters" id="agenda-type-filters">
-              <span class="atype-chip active" data-type="" onclick="filterAgendaType(this,'')">Todos</span>
-              <span class="atype-chip" data-type="audiencia" onclick="filterAgendaType(this,'audiencia')">⚖ Audiência</span>
-              <span class="atype-chip" data-type="reuniao" onclick="filterAgendaType(this,'reuniao')">🤝 Reunião</span>
-              <span class="atype-chip" data-type="prazo" onclick="filterAgendaType(this,'prazo')">⏱ Prazo</span>
-              <span class="atype-chip" data-type="consulta" onclick="filterAgendaType(this,'consulta')">👤 Consulta</span>
-              <span class="atype-chip" data-type="outro" onclick="filterAgendaType(this,'outro')">📌 Outro</span>
+              <span class="atype-chip active" data-type="" onclick="filterAgendaType(this,&#39;&#39;)">Todos</span>
+              <span class="atype-chip" data-type="audiencia" onclick="filterAgendaType(this,&#39;audiencia&#39;)">⚖ Audiência</span>
+              <span class="atype-chip" data-type="reuniao" onclick="filterAgendaType(this,&#39;reuniao&#39;)">🤝 Reunião</span>
+              <span class="atype-chip" data-type="prazo" onclick="filterAgendaType(this,&#39;prazo&#39;)">⏱ Prazo</span>
+              <span class="atype-chip" data-type="consulta" onclick="filterAgendaType(this,&#39;consulta&#39;)">👤 Consulta</span>
+              <span class="atype-chip" data-type="outro" onclick="filterAgendaType(this,&#39;outro&#39;)">📌 Outro</span>
             </div>
           </div>
 
@@ -2753,16 +2907,16 @@
     </div>
 
   </div>
-</main>
-</div><!-- /app-inner -->
-</div><!-- /app-layout -->
+
+<!-- /app-inner -->
+<!-- /app-layout -->
 
 <!-- SETTINGS PANEL -->
 <div class="panel" id="panel-settings">
 
   <div style="max-width:720px;width:100%;">
     <div style="margin-bottom:28px;">
-      <div style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:6px;">⚙ Configurações</div>
+      <div style="font-family:&#39;Playfair Display&#39;,serif;font-size:26px;font-weight:700;margin-bottom:6px;">⚙ Configurações</div>
       <div style="font-size:13px;color:var(--text-muted);">Gerencie as chaves de API e preferências do LexIA.</div>
     </div>
 
@@ -2780,10 +2934,8 @@
         <div class="settings-field">
           <label class="settings-label" for="anthropic-key-input">API Key Gemini (AIza...)</label>
           <div class="settings-key-row">
-            <input class="settings-input" id="anthropic-key-input" type="password"
-              placeholder="AIza... (chave do Google AI Studio)"
-              autocomplete="off" spellcheck="false">
-            <button class="settings-key-eye" onclick="settingsToggleKey('anthropic-key-input',this)">👁</button>
+            <input class="settings-input" id="anthropic-key-input" type="password" placeholder="AIza... (chave do Google AI Studio)" autocomplete="off" spellcheck="false">
+            <button class="settings-key-eye" onclick="settingsToggleKey(&#39;anthropic-key-input&#39;,this)">👁</button>
           </div>
           <div class="settings-hint">
             Obtenha sua chave gratuita em <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--gold);">aistudio.google.com/app/apikey</a>.<br>
@@ -2794,14 +2946,14 @@
 
         <div style="display:flex;align-items:center;gap:12px;margin-top:4px;">
           <button class="settings-save-btn" onclick="saveAnthropicKey()">💾 Salvar Chave</button>
-          <button onclick="testAnthropicKey()" style="padding:12px 20px;background:transparent;border:1px solid var(--border);border-radius:9px;color:var(--text-muted);font-family:'Outfit',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">🔌 Testar Conexão</button>
+          <button onclick="testAnthropicKey()" style="padding:12px 20px;background:transparent;border:1px solid var(--border);border-radius:9px;color:var(--text-muted);font-family:&#39;Outfit&#39;,sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor=&#39;var(--gold)&#39;;this.style.color=&#39;var(--gold)&#39;" onmouseout="this.style.borderColor=&#39;var(--border)&#39;;this.style.color=&#39;var(--text-muted)&#39;">🔌 Testar Conexão</button>
           <span id="anthropic-test-msg" style="font-size:12px;color:var(--text-muted);"></span>
         </div>
 
         <div style="background:rgba(201,168,76,0.05);border:1px solid rgba(201,168,76,0.15);border-radius:10px;padding:14px 16px;margin-top:18px;">
           <div style="font-size:12.5px;font-weight:600;margin-bottom:6px;">📋 Como obter a chave paga:</div>
           <ol style="padding-left:18px;margin:0;display:flex;flex-direction:column;gap:4px;">
-            <li style="font-size:12px;color:var(--text-muted);line-height:1.6;">Acesse <a href="https://aistudio.google.com" target="_blank" style="color:var(--gold);">aistudio.google.com</a> e crie uma conta</li>
+            <li style="font-size:12px;color:var(--text-muted);line-height:1.6;">Acesse <a href="https://aistudio.google.com/" target="_blank" style="color:var(--gold);">aistudio.google.com</a> e crie uma conta</li>
             <li style="font-size:12px;color:var(--text-muted);line-height:1.6;">Vá em <strong style="color:var(--text);">Billing</strong> e adicione um cartão de crédito (cobrado por uso)</li>
             <li style="font-size:12px;color:var(--text-muted);line-height:1.6;">Acesse <strong style="color:var(--text);">API Keys</strong> → <strong style="color:var(--text);">Create Key</strong></li>
             <li style="font-size:12px;color:var(--text-muted);line-height:1.6;">Cole a chave acima e clique em <strong style="color:var(--text);">Salvar</strong></li>
@@ -2832,7 +2984,7 @@
         </div>
         <div class="settings-field">
           <label class="settings-label" for="settings-escritorio">Escritório</label>
-          <input class="settings-input" id="settings-escritorio" type="text" placeholder="Oliveira & Associados Advogados">
+          <input class="settings-input" id="settings-escritorio" type="text" placeholder="Oliveira &amp; Associados Advogados">
         </div>
         <button class="settings-save-btn" onclick="saveProfileSettings()">💾 Salvar Perfil</button>
       </div>
@@ -2854,18 +3006,14 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
           <div class="settings-field" style="margin-bottom:0">
             <label class="settings-label" for="settings-evo-url">URL do Servidor</label>
-            <input class="settings-input" id="settings-evo-url" type="url"
-              placeholder="http://SEU_IP:8080"
-              oninput="evoServerChanged()">
+            <input class="settings-input" id="settings-evo-url" type="url" placeholder="http://SEU_IP:8080" oninput="evoServerChanged()">
             <div class="settings-hint">Ex: <code>http://123.456.789.0:8080</code></div>
           </div>
           <div class="settings-field" style="margin-bottom:0">
             <label class="settings-label" for="settings-evo-key">API Key</label>
             <div class="settings-key-row">
-              <input class="settings-input" id="settings-evo-key" type="password"
-                placeholder="Sua chave secreta"
-                oninput="evoServerChanged()">
-              <button class="settings-key-eye" onclick="settingsToggleKey('settings-evo-key',this)">👁</button>
+              <input class="settings-input" id="settings-evo-key" type="password" placeholder="Sua chave secreta" oninput="evoServerChanged()">
+              <button class="settings-key-eye" onclick="settingsToggleKey(&#39;settings-evo-key&#39;,this)">👁</button>
             </div>
             <div class="settings-hint">Definida no <code>docker-compose.yml</code> → <code>AUTHENTICATION_API_KEY</code></div>
           </div>
@@ -2874,9 +3022,7 @@
           <button class="settings-save-btn" onclick="saveEvoServer()" style="background:var(--whatsapp);color:#000;">
             💾 Salvar e Ativar
           </button>
-          <button onclick="testEvoServer()" style="padding:12px 18px;background:transparent;border:1px solid var(--border);border-radius:9px;color:var(--text-muted);font-family:'Outfit',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;"
-            onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'"
-            onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">
+          <button onclick="testEvoServer()" style="padding:12px 18px;background:transparent;border:1px solid var(--border);border-radius:9px;color:var(--text-muted);font-family:&#39;Outfit&#39;,sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor=&#39;var(--green)&#39;;this.style.color=&#39;var(--green)&#39;" onmouseout="this.style.borderColor=&#39;var(--border)&#39;;this.style.color=&#39;var(--text-muted)&#39;">
             🔌 Testar conexão
           </button>
           <span id="evo-server-test-msg" style="font-size:12px;color:var(--text-muted);"></span>
@@ -2905,7 +3051,7 @@
       <!-- Drive Connect Banner -->
       <div class="drive-connect-banner" id="docs-drive-banner">
         <div class="drive-connect-banner-title">
-          <svg width="13" height="12" viewBox="0 0 87.3 78"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H1.1c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.1 47.5c0 1.55.4 3.1 1.2 4.5H27.5z" fill="#00ac47"/><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H61.1l5.9 11.5z" fill="#ea4335"/><path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/><path d="M61.1 53H27.5L13.75 76.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.4 4.5-1.2z" fill="#2684fc"/><path d="M73.4 26.5l-12.75-22.1c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25l17.45 28H86.2c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg>
+          <svg width="13" height="12" viewBox="0 0 87.3 78"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H1.1c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"></path><path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.1 47.5c0 1.55.4 3.1 1.2 4.5H27.5z" fill="#00ac47"></path><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H61.1l5.9 11.5z" fill="#ea4335"></path><path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"></path><path d="M61.1 53H27.5L13.75 76.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.4 4.5-1.2z" fill="#2684fc"></path><path d="M73.4 26.5l-12.75-22.1c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25l17.45 28H86.2c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"></path></svg>
           Google Drive
         </div>
         <div class="drive-connect-banner-desc" id="docs-drive-banner-desc">Conecte o Drive para importar documentos dos seus clientes diretamente.</div>
@@ -2936,7 +3082,7 @@
           <div class="docs-header-actions">
             <div class="docs-stat-pill" id="doc-stat-count"><span id="doc-count-num">0</span> doc(s)</div>
             <button class="btn btn-outline" onclick="openDriveImportModal()" style="font-size:12px;padding:6px 13px;display:flex;align-items:center;gap:6px">
-              <svg width="13" height="12" viewBox="0 0 87.3 78" style="flex-shrink:0"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H1.1c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.1 47.5c0 1.55.4 3.1 1.2 4.5H27.5z" fill="#00ac47"/><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H61.1l5.9 11.5z" fill="#ea4335"/><path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/><path d="M61.1 53H27.5L13.75 76.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.4 4.5-1.2z" fill="#2684fc"/><path d="M73.4 26.5l-12.75-22.1c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25l17.45 28H86.2c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg>
+              <svg width="13" height="12" viewBox="0 0 87.3 78" style="flex-shrink:0"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H1.1c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"></path><path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.1 47.5c0 1.55.4 3.1 1.2 4.5H27.5z" fill="#00ac47"></path><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H61.1l5.9 11.5z" fill="#ea4335"></path><path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"></path><path d="M61.1 53H27.5L13.75 76.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.4 4.5-1.2z" fill="#2684fc"></path><path d="M73.4 26.5l-12.75-22.1c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25l17.45 28H86.2c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"></path></svg>
               Importar Drive
             </button>
             <button class="btn btn-gold" onclick="openDocUpload()">+ Adicionar</button>
@@ -2945,13 +3091,13 @@
 
         <!-- Filtro de categoria -->
         <div class="docs-cat-bar">
-          <span class="docs-cat-chip active" data-cat="" onclick="filterDocsCat(this,'')">Todos</span>
-          <span class="docs-cat-chip" data-cat="identidade" onclick="filterDocsCat(this,'identidade')">🪪 Identidade</span>
-          <span class="docs-cat-chip" data-cat="trabalhista" onclick="filterDocsCat(this,'trabalhista')">💼 Trabalhista</span>
-          <span class="docs-cat-chip" data-cat="judicial" onclick="filterDocsCat(this,'judicial')">⚖ Judicial</span>
-          <span class="docs-cat-chip" data-cat="contrato" onclick="filterDocsCat(this,'contrato')">📝 Contrato</span>
-          <span class="docs-cat-chip" data-cat="financeiro" onclick="filterDocsCat(this,'financeiro')">💰 Financeiro</span>
-          <span class="docs-cat-chip" data-cat="outro" onclick="filterDocsCat(this,'outro')">📌 Outro</span>
+          <span class="docs-cat-chip active" data-cat="" onclick="filterDocsCat(this,&#39;&#39;)">Todos</span>
+          <span class="docs-cat-chip" data-cat="identidade" onclick="filterDocsCat(this,&#39;identidade&#39;)">🪪 Identidade</span>
+          <span class="docs-cat-chip" data-cat="trabalhista" onclick="filterDocsCat(this,&#39;trabalhista&#39;)">💼 Trabalhista</span>
+          <span class="docs-cat-chip" data-cat="judicial" onclick="filterDocsCat(this,&#39;judicial&#39;)">⚖ Judicial</span>
+          <span class="docs-cat-chip" data-cat="contrato" onclick="filterDocsCat(this,&#39;contrato&#39;)">📝 Contrato</span>
+          <span class="docs-cat-chip" data-cat="financeiro" onclick="filterDocsCat(this,&#39;financeiro&#39;)">💰 Financeiro</span>
+          <span class="docs-cat-chip" data-cat="outro" onclick="filterDocsCat(this,&#39;outro&#39;)">📌 Outro</span>
         </div>
 
         <!-- Drop zone -->
@@ -2959,7 +3105,7 @@
           <div class="docs-drop-icon">⬆</div>
           <div class="docs-drop-text">Arraste arquivos aqui ou <span style="color:var(--gold)">clique para selecionar</span></div>
           <div class="docs-drop-hint">PDF, Word, Excel, imagens — até 50 MB por arquivo</div>
-          <input type="file" id="doc-file-input" multiple style="display:none" onchange="docsHandleFiles(this.files)">
+          <input type="file" id="doc-file-input" multiple="" style="display:none" onchange="docsHandleFiles(this.files)">
         </div>
 
         <!-- Grid de documentos -->
@@ -2967,8 +3113,8 @@
           <div class="docs-grid-header">
             <div class="docs-grid-count" id="docs-grid-count">0 documentos</div>
             <div class="docs-view-toggle">
-              <button class="docs-view-btn active" id="view-grid-btn" onclick="setDocsView('grid',this)">⊞</button>
-              <button class="docs-view-btn" id="view-list-btn" onclick="setDocsView('list',this)">☰</button>
+              <button class="docs-view-btn active" id="view-grid-btn" onclick="setDocsView(&#39;grid&#39;,this)">⊞</button>
+              <button class="docs-view-btn" id="view-list-btn" onclick="setDocsView(&#39;list&#39;,this)">☰</button>
             </div>
           </div>
           <div class="docs-grid" id="docs-grid"></div>
@@ -2992,7 +3138,7 @@
     </div>
     <div class="modal-body">
       <!-- Drop area no modal -->
-      <div class="doc-modal-drop" id="doc-modal-drop" onclick="document.getElementById('doc-modal-file').click()" ondragover="docsDragOver(event)" ondrop="docModalDrop(event)">
+      <div class="doc-modal-drop" id="doc-modal-drop" onclick="document.getElementById(&#39;doc-modal-file&#39;).click()" ondragover="docsDragOver(event)" ondrop="docModalDrop(event)">
         <div id="doc-modal-drop-preview">
           <div style="font-size:28px;margin-bottom:6px">📄</div>
           <div style="font-size:13px;color:var(--gold)">Clique ou arraste o arquivo</div>
@@ -3031,14 +3177,14 @@
   <div class="modal" style="width:680px;max-height:88vh">
     <div class="modal-header">
       <div class="modal-title" id="doc-view-title">Documento</div>
-      <button class="modal-close" onclick="document.getElementById('doc-view-modal').classList.remove('active')">✕</button>
+      <button class="modal-close" onclick="document.getElementById(&#39;doc-view-modal&#39;).classList.remove(&#39;active&#39;)">✕</button>
     </div>
     <div class="modal-body" style="padding:0;overflow:hidden;border-radius:0 0 14px 14px">
       <div id="doc-view-content" style="width:100%;min-height:400px;display:flex;align-items:center;justify-content:center;background:var(--bg)"></div>
     </div>
     <div class="modal-footer">
       <span style="font-size:11.5px;color:var(--text-dim)" id="doc-view-meta"></span>
-      <button class="btn btn-outline" onclick="document.getElementById('doc-view-modal').classList.remove('active')">Fechar</button>
+      <button class="btn btn-outline" onclick="document.getElementById(&#39;doc-view-modal&#39;).classList.remove(&#39;active&#39;)">Fechar</button>
       <button class="btn btn-gold" id="doc-view-download" onclick="downloadDoc()">⬇ Baixar</button>
     </div>
   </div>
@@ -3082,7 +3228,7 @@
       <div class="form-group"><label class="form-label">Local / Link</label><input class="form-input" id="ev-local" placeholder="Ex: Fórum Central, Sala 3 ou https://meet.google.com/..."></div>
       <div class="form-group"><label class="form-label">Observações</label><textarea class="form-textarea" id="ev-obs" placeholder="Detalhes adicionais..." style="min-height:60px"></textarea></div>
       <div class="form-group" style="flex-direction:row;align-items:center;gap:10px">
-        <label class="big-toggle"><input type="checkbox" id="ev-lembrete" checked><span class="big-slider"></span></label>
+        <label class="big-toggle"><input type="checkbox" id="ev-lembrete" checked=""><span class="big-slider"></span></label>
         <span style="font-size:12.5px;color:var(--text-muted)">Lembrete 1h antes</span>
         <label class="big-toggle" style="margin-left:16px"><input type="checkbox" id="ev-gcal"><span class="big-slider"></span></label>
         <span style="font-size:12.5px;color:var(--text-muted)">Sincronizar com Google Agenda</span>
@@ -3131,7 +3277,7 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./LexIA — Plataforma Jurídica Inteligente_files/supabase-js@2"></script>
 <script>
 // ═══════════════════════════════════════════════════════════════════
 //  SUPABASE CONFIG — substitua com os dados do seu projeto
@@ -3232,7 +3378,7 @@ if (_supa) {
 }
 </script>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // =============================================
 // DATA
 // =============================================
@@ -4660,6 +4806,81 @@ var autoReconnectInterval = null;
 var reconnectAttempts = 0;
 var MAX_RECONNECT_ATTEMPTS = 999; // keep trying forever
 
+
+// ─── POLLING DE MENSAGENS - GARANTIA DE RECEBIMENTO ─────────────────────────
+async function setupEvolutionWebhook() {
+  if (!evoCfg?.url || !evoCfg?.apiKey || !evoCfg?.instance) return;
+  try {
+    // Tenta configurar webhook apontando para a própria instância (fallback local)
+    // Na prática o polling substitui o webhook para apps frontend
+    await fetch(evoCfg.url + '/webhook/set/' + evoCfg.instance, {
+      method: 'POST',
+      headers: { 'apikey': evoCfg.apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        webhook: {
+          enabled: true,
+          url: window.location.origin + '/webhook',
+          events: ['MESSAGES_UPSERT', 'MESSAGES_UPDATE', 'CONNECTION_UPDATE']
+        }
+      })
+    });
+  } catch(e) { /* ignora erros de webhook - polling continua funcionando */ }
+}
+
+async function forcePollMessages() {
+  // Força uma busca imediata de mensagens ao conectar
+  if (!evoCfg?.url || !evoCfg?.apiKey || !evoCfg?.instance) return;
+  try {
+    const res = await fetch(evoCfg.url + '/message/findMessages/' + evoCfg.instance, {
+      method: 'POST',
+      headers: { 'apikey': evoCfg.apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ where: { key: { fromMe: false } }, limit: 100 })
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const msgs = Array.isArray(data) ? data : (data?.messages?.records || data?.data || []);
+
+    msgs.forEach(m => {
+      const text = m.message?.conversation
+        || m.message?.extendedTextMessage?.text
+        || m.message?.imageMessage?.caption || '';
+      if (!text) return;
+      const rawPhone = (m.key?.remoteJid || '').replace('@s.whatsapp.net','').replace('@g.us','');
+      if (!rawPhone || rawPhone.includes('-')) return; // pula grupos
+      const ts = m.messageTimestamp || m.timestamp || 0;
+      if (lastMsgTimestamps[rawPhone] && ts <= lastMsgTimestamps[rawPhone]) return;
+      lastMsgTimestamps[rawPhone] = ts;
+
+      let conv = conversations.find(c => c.id === rawPhone || c.phone === '+'+rawPhone);
+      if (!conv) {
+        const pushName = m.pushName || rawPhone;
+        conv = {
+          id: rawPhone, name: pushName,
+          initials: pushName.substring(0,2).toUpperCase(),
+          phone: '+'+rawPhone, unread: 0, aiActive: true, lawyerMode: false,
+          time: new Date(ts*1000).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+          messages: [], history: [], collected: {}
+        };
+        conversations.unshift(conv);
+        addAgentLog('👤 Novo contato: <strong>'+conv.name+'</strong>','on');
+      }
+      const alreadyHas = conv.messages.some(x => x.ts === ts && x.role === 'client');
+      if (alreadyHas) return;
+      const timeStr = new Date(ts*1000).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      const msgObj = { role:'client', text, time:timeStr, ts };
+      conv.messages.push(msgObj);
+      conv.time = timeStr;
+      conv.unread = (conv.unread||0)+1;
+      renderConvList();
+      saveLocalConversations();
+      if (conv.aiActive && !conv.lawyerMode) {
+        setTimeout(() => callAI(conv), 1500 + Math.random()*1000);
+      }
+    });
+    if (msgs.length > 0) renderConvList();
+  } catch(e) { console.warn('forcePollMessages:', e.message); }
+}
+// ─────────────────────────────────────────────────────────────────────────────
 function startSyncLoop() {
   clearInterval(syncInterval);
   clearInterval(msgPollInterval);
@@ -6920,10 +7141,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <div class="drive-import-header">
       <div style="width:42px;height:42px;border-radius:11px;background:#fff;border:1px solid #dadce0;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <svg width="24" height="22" viewBox="0 0 87.3 78"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H1.1c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.1 47.5c0 1.55.4 3.1 1.2 4.5H27.5z" fill="#00ac47"/><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H61.1l5.9 11.5z" fill="#ea4335"/><path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/><path d="M61.1 53H27.5L13.75 76.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.4 4.5-1.2z" fill="#2684fc"/><path d="M73.4 26.5l-12.75-22.1c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25l17.45 28H86.2c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg>
+        <svg width="24" height="22" viewBox="0 0 87.3 78"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H1.1c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"></path><path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.1 47.5c0 1.55.4 3.1 1.2 4.5H27.5z" fill="#00ac47"></path><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H61.1l5.9 11.5z" fill="#ea4335"></path><path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"></path><path d="M61.1 53H27.5L13.75 76.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.4 4.5-1.2z" fill="#2684fc"></path><path d="M73.4 26.5l-12.75-22.1c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25l17.45 28H86.2c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"></path></svg>
       </div>
       <div style="flex:1">
-        <div style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700">Importar do Google Drive</div>
+        <div style="font-family:&#39;Playfair Display&#39;,serif;font-size:19px;font-weight:700">Importar do Google Drive</div>
         <div style="font-size:12px;color:var(--text-muted);margin-top:2px" id="drive-import-subtitle">Selecione arquivos para adicionar à pasta do cliente</div>
       </div>
       <button class="modal-close" onclick="closeDriveImportModal()">✕</button>
@@ -6936,7 +7157,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:22px;">
           <div style="text-align:center;margin-bottom:18px">
             <div style="font-size:42px;margin-bottom:10px">☁</div>
-            <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:600;margin-bottom:6px">Conectar ao Google Drive</div>
+            <div style="font-family:&#39;Playfair Display&#39;,serif;font-size:17px;font-weight:600;margin-bottom:6px">Conectar ao Google Drive</div>
             <div style="font-size:13px;color:var(--text-muted);line-height:1.6;max-width:400px;margin:0 auto">Autorize o acesso para navegar e importar documentos das pastas do seu Drive diretamente para o LexIA.</div>
           </div>
 
@@ -6944,12 +7165,12 @@ document.addEventListener('DOMContentLoaded', function() {
             <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);font-weight:600;margin-bottom:6px">Client ID (Google Cloud Console)</div>
             <input id="drive-import-client-id" class="form-input" placeholder="xxxx.apps.googleusercontent.com" style="font-size:12.5px">
             <div style="font-size:11px;color:var(--text-dim);margin-top:5px;line-height:1.5">
-              Em <a href="https://console.cloud.google.com" target="_blank" style="color:var(--blue)">console.cloud.google.com</a> → APIs & Services → Credentials → OAuth 2.0 Client ID. Ative a <strong>Google Drive API</strong>.
+              Em <a href="https://console.cloud.google.com/" target="_blank" style="color:var(--blue)">console.cloud.google.com</a> → APIs &amp; Services → Credentials → OAuth 2.0 Client ID. Ative a <strong>Google Drive API</strong>.
             </div>
           </div>
 
-          <button onclick="connectDriveForImport()" style="width:100%;padding:12px;border:none;border-radius:9px;background:#fff;color:#3c4043;font-family:'Outfit',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 1px 4px rgba(0,0,0,0.2);transition:all 0.2s" onmouseover="this.style.boxShadow='0 3px 10px rgba(0,0,0,0.25)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,0.2)'">
-            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></svg>
+          <button onclick="connectDriveForImport()" style="width:100%;padding:12px;border:none;border-radius:9px;background:#fff;color:#3c4043;font-family:&#39;Outfit&#39;,sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 1px 4px rgba(0,0,0,0.2);transition:all 0.2s" onmouseover="this.style.boxShadow=&#39;0 3px 10px rgba(0,0,0,0.25)&#39;" onmouseout="this.style.boxShadow=&#39;0 1px 4px rgba(0,0,0,0.2)&#39;">
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"></path></svg>
             Entrar com Google
           </button>
         </div>
@@ -6965,14 +7186,14 @@ document.addEventListener('DOMContentLoaded', function() {
             <div style="font-size:12.5px;font-weight:600" id="drive-import-user-name">Conta Google</div>
             <div style="font-size:11px;color:#34a853" id="drive-import-user-email"></div>
           </div>
-          <button onclick="disconnectDriveImport()" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--text-muted);cursor:pointer;font-family:'Outfit',sans-serif">Sair</button>
+          <button onclick="disconnectDriveImport()" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--text-muted);cursor:pointer;font-family:&#39;Outfit&#39;,sans-serif">Sair</button>
           <span style="font-size:10.5px;color:var(--text-dim)" id="drive-import-selected-count"></span>
         </div>
 
         <!-- Search bar -->
         <div style="position:relative">
           <input id="drive-search-input" class="form-input" placeholder="🔍 Buscar arquivos e pastas no Drive..." style="padding-right:40px" oninput="searchDriveFiles(this.value)">
-          <button onclick="searchDriveFiles(document.getElementById('drive-search-input').value)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-muted)">🔍</button>
+          <button onclick="searchDriveFiles(document.getElementById(&#39;drive-search-input&#39;).value)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-muted)">🔍</button>
         </div>
 
         <!-- Breadcrumb -->
@@ -7014,7 +7235,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <!-- STEP 4: Done -->
       <div id="drive-import-step-done" style="display:none;text-align:center;padding:20px">
         <div style="font-size:52px;margin-bottom:14px">✅</div>
-        <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:8px">Importação concluída!</div>
+        <div style="font-family:&#39;Playfair Display&#39;,serif;font-size:20px;font-weight:700;margin-bottom:8px">Importação concluída!</div>
         <div style="font-size:13px;color:var(--text-muted)" id="drive-import-done-msg"></div>
       </div>
 
@@ -7022,9 +7243,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <div class="drive-import-footer">
       <button class="btn btn-outline" onclick="closeDriveImportModal()">Fechar</button>
-      <button class="btn" id="drive-import-action-btn"
-        style="background:#34a853;border:none;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border-radius:8px;padding:9px 22px;display:none"
-        onclick="startDriveImport()">
+      <button class="btn" id="drive-import-action-btn" style="background:#34a853;border:none;color:#fff;font-family:&#39;Outfit&#39;,sans-serif;font-size:13px;font-weight:700;cursor:pointer;border-radius:8px;padding:9px 22px;display:none" onclick="startDriveImport()">
         ☁ Importar Selecionados
       </button>
     </div>
@@ -7432,16 +7651,16 @@ document.getElementById('drive-import-modal').addEventListener('click', e => {
 
 <!-- BOTTOM NAVIGATION (mobile) -->
 <div id="bottom-nav">
-  <div class="bnav-item active" id="bnav-dashboard" onclick="navigate('dashboard',null);setBottomNav('dashboard')">
+  <div class="bnav-item active" id="bnav-dashboard" onclick="navigate(&#39;dashboard&#39;,null);setBottomNav(&#39;dashboard&#39;)">
     <span class="bnav-icon">📊</span><span class="bnav-label">Dashboard</span>
   </div>
-  <div class="bnav-item" id="bnav-whatsapp" onclick="navigate('whatsapp',null);setBottomNav('whatsapp')">
+  <div class="bnav-item" id="bnav-whatsapp" onclick="navigate(&#39;whatsapp&#39;,null);setBottomNav(&#39;whatsapp&#39;)">
     <span class="bnav-icon">💬</span><span class="bnav-label">WhatsApp</span>
   </div>
-  <div class="bnav-item" id="bnav-cases" onclick="navigate('cases',null);setBottomNav('cases')">
+  <div class="bnav-item" id="bnav-cases" onclick="navigate(&#39;cases&#39;,null);setBottomNav(&#39;cases&#39;)">
     <span class="bnav-icon">📁</span><span class="bnav-label">Casos</span>
   </div>
-  <div class="bnav-item" id="bnav-agenda" onclick="navigate('agenda',null);setBottomNav('agenda')">
+  <div class="bnav-item" id="bnav-agenda" onclick="navigate(&#39;agenda&#39;,null);setBottomNav(&#39;agenda&#39;)">
     <span class="bnav-icon">📅</span><span class="bnav-label">Agenda</span>
   </div>
   <div class="bnav-item" id="bnav-more" onclick="toggleSidebar()">
@@ -7495,7 +7714,7 @@ document.getElementById('drive-import-modal').addEventListener('click', e => {
     <div class="doc-gen-header">
       <div class="doc-gen-header-icon">📝</div>
       <div style="flex:1">
-        <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700">Gerar Documento com IA</div>
+        <div style="font-family:&#39;Playfair Display&#39;,serif;font-size:20px;font-weight:700">Gerar Documento com IA</div>
         <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Dados do atendimento preenchidos automaticamente</div>
       </div>
       <button class="modal-close" onclick="closeDocGenModal()" style="font-size:20px">✕</button>
@@ -7506,31 +7725,31 @@ document.getElementById('drive-import-modal').addEventListener('click', e => {
       <div class="doc-gen-left">
         <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:0.18em;color:var(--text-dim);font-weight:600;margin-bottom:4px;padding:0 4px">Tipo de documento</div>
 
-        <div class="doc-type-card active" id="doctype-contrato" onclick="selectDocType('contrato')">
+        <div class="doc-type-card active" id="doctype-contrato" onclick="selectDocType(&#39;contrato&#39;)">
           <div class="doc-type-icon">📄</div>
           <div class="doc-type-name">Contrato de Serviço</div>
           <div class="doc-type-desc">Prestação de serviços advocatícios com honorários e escopo definidos</div>
         </div>
 
-        <div class="doc-type-card" id="doctype-procuracao" onclick="selectDocType('procuracao')">
+        <div class="doc-type-card" id="doctype-procuracao" onclick="selectDocType(&#39;procuracao&#39;)">
           <div class="doc-type-icon">✍️</div>
           <div class="doc-type-name">Procuração Ad Judicia</div>
           <div class="doc-type-desc">Procuração para representação judicial com poderes gerais e especiais</div>
         </div>
 
-        <div class="doc-type-card" id="doctype-procuracao-extrajudicial" onclick="selectDocType('procuracao-extrajudicial')">
+        <div class="doc-type-card" id="doctype-procuracao-extrajudicial" onclick="selectDocType(&#39;procuracao-extrajudicial&#39;)">
           <div class="doc-type-icon">🏛️</div>
           <div class="doc-type-name">Procuração Extrajudicial</div>
           <div class="doc-type-desc">Para atos fora do âmbito judicial: contratos, negociações, representações</div>
         </div>
 
-        <div class="doc-type-card" id="doctype-declaracao" onclick="selectDocType('declaracao')">
+        <div class="doc-type-card" id="doctype-declaracao" onclick="selectDocType(&#39;declaracao&#39;)">
           <div class="doc-type-icon">📋</div>
           <div class="doc-type-name">Declaração de Hipossuficiência</div>
           <div class="doc-type-desc">Para clientes que solicitam assistência judiciária gratuita</div>
         </div>
 
-        <div class="doc-type-card" id="doctype-termo" onclick="selectDocType('termo')">
+        <div class="doc-type-card" id="doctype-termo" onclick="selectDocType(&#39;termo&#39;)">
           <div class="doc-type-icon">🤝</div>
           <div class="doc-type-name">Termo de Encerramento</div>
           <div class="doc-type-desc">Rescisão do contrato de prestação de serviços com quitação mútua</div>
@@ -7538,21 +7757,21 @@ document.getElementById('drive-import-modal').addEventListener('click', e => {
 
         <div style="margin-top:14px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:9px;">
           <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);font-weight:600;margin-bottom:8px">Instruções adicionais para a IA</div>
-          <textarea id="doc-gen-instructions" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-family:'Outfit',sans-serif;font-size:12px;outline:none;resize:none;height:80px;line-height:1.5" placeholder="Ex: incluir cláusula de sigilo, honorários em 3x, prazo de 6 meses..."></textarea>
+          <textarea id="doc-gen-instructions" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-family:&#39;Outfit&#39;,sans-serif;font-size:12px;outline:none;resize:none;height:80px;line-height:1.5" placeholder="Ex: incluir cláusula de sigilo, honorários em 3x, prazo de 6 meses..."></textarea>
         </div>
       </div>
 
       <!-- RIGHT: preview -->
       <div class="doc-gen-right">
         <div class="doc-gen-toolbar">
-          <button onclick="generateDocument()" id="doc-gen-btn" style="background:var(--blue);border:none;color:#fff;padding:9px 18px;border-radius:8px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all 0.2s">
+          <button onclick="generateDocument()" id="doc-gen-btn" style="background:var(--blue);border:none;color:#fff;padding:9px 18px;border-radius:8px;font-family:&#39;Outfit&#39;,sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all 0.2s">
             <span>✦</span> Gerar com IA
           </button>
-          <button onclick="regenerateDocument()" id="doc-regen-btn" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);padding:9px 14px;border-radius:8px;font-family:'Outfit',sans-serif;font-size:12.5px;cursor:pointer;transition:all 0.2s">🔄 Regenerar</button>
+          <button onclick="regenerateDocument()" id="doc-regen-btn" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);padding:9px 14px;border-radius:8px;font-family:&#39;Outfit&#39;,sans-serif;font-size:12.5px;cursor:pointer;transition:all 0.2s">🔄 Regenerar</button>
           <div style="flex:1"></div>
-          <button onclick="copyDocContent()" id="doc-copy-btn" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);padding:9px 14px;border-radius:8px;font-family:'Outfit',sans-serif;font-size:12.5px;cursor:pointer" title="Copiar texto">📋 Copiar</button>
-          <button onclick="downloadGeneratedDoc()" id="doc-download-btn" style="display:none;background:var(--gold);border:none;color:#000;padding:9px 16px;border-radius:8px;font-family:'Outfit',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer" title="Baixar .txt">⬇ Baixar</button>
-          <button onclick="saveDocToDrive()" id="doc-drive-btn" style="display:none;background:#34a853;border:none;color:#fff;padding:9px 16px;border-radius:8px;font-family:'Outfit',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer">☁ Drive</button>
+          <button onclick="copyDocContent()" id="doc-copy-btn" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);padding:9px 14px;border-radius:8px;font-family:&#39;Outfit&#39;,sans-serif;font-size:12.5px;cursor:pointer" title="Copiar texto">📋 Copiar</button>
+          <button onclick="downloadGeneratedDoc()" id="doc-download-btn" style="display:none;background:var(--gold);border:none;color:#000;padding:9px 16px;border-radius:8px;font-family:&#39;Outfit&#39;,sans-serif;font-size:12.5px;font-weight:700;cursor:pointer" title="Baixar .txt">⬇ Baixar</button>
+          <button onclick="saveDocToDrive()" id="doc-drive-btn" style="display:none;background:#34a853;border:none;color:#fff;padding:9px 16px;border-radius:8px;font-family:&#39;Outfit&#39;,sans-serif;font-size:12.5px;font-weight:700;cursor:pointer">☁ Drive</button>
         </div>
 
         <div class="doc-gen-preview" id="doc-gen-preview">
@@ -7566,7 +7785,7 @@ document.getElementById('drive-import-modal').addEventListener('click', e => {
         <div class="doc-gen-footer">
           <div class="doc-gen-status" id="doc-gen-status"></div>
           <button class="btn btn-outline" onclick="closeDocGenModal()">Fechar</button>
-          <button class="btn" id="doc-add-to-case-btn" style="display:none;background:rgba(74,143,232,0.15);border:1px solid rgba(74,143,232,0.3);color:var(--blue);font-family:'Outfit',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;border-radius:7px;padding:9px 16px" onclick="addDocToCase()">📁 Adicionar ao Caso</button>
+          <button class="btn" id="doc-add-to-case-btn" style="display:none;background:rgba(74,143,232,0.15);border:1px solid rgba(74,143,232,0.3);color:var(--blue);font-family:&#39;Outfit&#39;,sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;border-radius:7px;padding:9px 16px" onclick="addDocToCase()">📁 Adicionar ao Caso</button>
         </div>
       </div>
     </div>
@@ -7580,10 +7799,10 @@ document.getElementById('drive-import-modal').addEventListener('click', e => {
   <div class="gdrive-modal-inner">
     <div class="gdrive-header">
       <div class="gdrive-logo">
-        <svg width="24" height="22" viewBox="0 0 87.3 78"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H1.1c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.1 47.5c0 1.55.4 3.1 1.2 4.5H27.5z" fill="#00ac47"/><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H61.1l5.9 11.5z" fill="#ea4335"/><path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/><path d="M61.1 53H27.5L13.75 76.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.4 4.5-1.2z" fill="#2684fc"/><path d="M73.4 26.5l-12.75-22.1c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25l17.45 28H86.2c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg>
+        <svg width="24" height="22" viewBox="0 0 87.3 78"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H1.1c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"></path><path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.1 47.5c0 1.55.4 3.1 1.2 4.5H27.5z" fill="#00ac47"></path><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H61.1l5.9 11.5z" fill="#ea4335"></path><path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"></path><path d="M61.1 53H27.5L13.75 76.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.4 4.5-1.2z" fill="#2684fc"></path><path d="M73.4 26.5l-12.75-22.1c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25l17.45 28H86.2c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"></path></svg>
       </div>
       <div style="flex:1">
-        <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700">Google Drive</div>
+        <div style="font-family:&#39;Playfair Display&#39;,serif;font-size:18px;font-weight:700">Google Drive</div>
         <div style="font-size:12px;color:var(--text-muted);margin-top:1px" id="gdrive-header-status">Organizar documentos do cliente</div>
       </div>
       <button class="modal-close" onclick="closeGDriveModal()">✕</button>
@@ -7605,11 +7824,11 @@ document.getElementById('drive-import-modal').addEventListener('click', e => {
             <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);font-weight:600;margin-bottom:6px">Client ID (Google Cloud Console)</div>
             <input id="gdrive-client-id" class="form-input" placeholder="xxxx.apps.googleusercontent.com" style="font-size:12px">
             <div style="font-size:11px;color:var(--text-dim);margin-top:5px;line-height:1.5">
-              Crie em <a href="https://console.cloud.google.com" target="_blank" style="color:var(--blue)">console.cloud.google.com</a> → APIs & Services → Credentials → OAuth 2.0 Client ID. Ative a <strong>Drive API</strong>.
+              Crie em <a href="https://console.cloud.google.com/" target="_blank" style="color:var(--blue)">console.cloud.google.com</a> → APIs &amp; Services → Credentials → OAuth 2.0 Client ID. Ative a <strong>Drive API</strong>.
             </div>
           </div>
           <button class="gdrive-connect-btn" onclick="connectGoogleDrive()">
-            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"></path></svg>
             Entrar com Google
           </button>
         </div>
@@ -7625,7 +7844,7 @@ document.getElementById('drive-import-modal').addEventListener('click', e => {
             <div style="font-size:13px;font-weight:600" id="gdrive-account-name">Conta Google</div>
             <div style="font-size:11.5px;color:#34a853;margin-top:1px" id="gdrive-account-email">conectado</div>
           </div>
-          <button onclick="disconnectDrive()" style="background:none;border:1px solid var(--border);border-radius:7px;padding:5px 10px;font-size:11px;color:var(--text-muted);cursor:pointer;font-family:'Outfit',sans-serif">Sair</button>
+          <button onclick="disconnectDrive()" style="background:none;border:1px solid var(--border);border-radius:7px;padding:5px 10px;font-size:11px;color:var(--text-muted);cursor:pointer;font-family:&#39;Outfit&#39;,sans-serif">Sair</button>
         </div>
 
         <!-- Folder section -->
@@ -7633,7 +7852,7 @@ document.getElementById('drive-import-modal').addEventListener('click', e => {
           <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);font-weight:600;margin-bottom:8px">Pasta do cliente</div>
           <div id="gdrive-folder-status" style="font-size:12.5px;color:var(--text-muted);padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:9px;display:flex;align-items:center;gap:8px">
             <span>📁</span> <span id="gdrive-folder-name-display">Nenhuma pasta selecionada</span>
-            <button onclick="createClientFolder()" id="gdrive-create-folder-btn" style="margin-left:auto;background:var(--gold);border:none;border-radius:6px;padding:5px 12px;font-size:11.5px;font-weight:700;color:#000;cursor:pointer;font-family:'Outfit',sans-serif">+ Criar pasta</button>
+            <button onclick="createClientFolder()" id="gdrive-create-folder-btn" style="margin-left:auto;background:var(--gold);border:none;border-radius:6px;padding:5px 12px;font-size:11.5px;font-weight:700;color:#000;cursor:pointer;font-family:&#39;Outfit&#39;,sans-serif">+ Criar pasta</button>
           </div>
         </div>
 
@@ -7651,7 +7870,7 @@ document.getElementById('drive-import-modal').addEventListener('click', e => {
 
     <div class="gdrive-footer">
       <button class="btn btn-outline" onclick="closeGDriveModal()">Fechar</button>
-      <button class="btn" id="gdrive-upload-btn" style="display:none;background:#34a853;border:none;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border-radius:8px;padding:9px 20px" onclick="startDriveUpload()">☁ Enviar ao Drive</button>
+      <button class="btn" id="gdrive-upload-btn" style="display:none;background:#34a853;border:none;color:#fff;font-family:&#39;Outfit&#39;,sans-serif;font-size:13px;font-weight:700;cursor:pointer;border-radius:8px;padding:9px 20px" onclick="startDriveUpload()">☁ Enviar ao Drive</button>
     </div>
   </div>
 </div>
@@ -8309,7 +8528,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const d = await r.json();
       const state = d?.instance?.state || d?.state;
       if (state === 'open') {
-        if (typeof waConnected !== 'undefined') window.waConnected = true;
+        waConnected = true; window.waConnected = true;
         if (typeof fetchInstanceProfile === 'function') fetchInstanceProfile();
         if (typeof updateWAConnectUI === 'function') updateWAConnectUI();
         if (typeof startSyncLoop === 'function') startSyncLoop();
@@ -8781,10 +9000,12 @@ function waconnPollStatus() {
 
 function waconnHandleConnected(inst) {
   // Sync with main app
-  if (typeof waConnected !== 'undefined') window.waConnected = true;
+  waConnected = true; window.waConnected = true;
   if (typeof fetchInstanceProfile === 'function') fetchInstanceProfile();
   if (typeof updateWAConnectUI === 'function') updateWAConnectUI();
   if (typeof simulateConnection === 'function') simulateConnection();
+  if (typeof startSyncLoop === 'function') startSyncLoop(); // garante polling ativo
+  setTimeout(() => { setupEvolutionWebhook(); forcePollMessages(); }, 1500); // busca msgs imediata
 
   // Show connected card, hide QR screen
   const qrScreen = document.getElementById('waconn-qr-screen');
@@ -9422,7 +9643,7 @@ function qcPollStatus() {
 function qcHandleConnected(inst) {
   // Sync with main app
   if (typeof waConnected !== 'undefined') {
-    window.waConnected = true;
+    waConnected = true; window.waConnected = true;
     if (typeof fetchInstanceProfile === 'function') fetchInstanceProfile();
     if (typeof updateWAConnectUI === 'function') updateWAConnectUI();
     if (typeof simulateConnection === 'function') simulateConnection();
@@ -9493,7 +9714,137 @@ qcSetStep(1);  qcSetStep(1);
 
 // Close modals on backdrop click (stub — original file was truncated here)
 
-</script>
+</script><div id="qc-overlay">
+<div id="qc-modal" role="dialog" aria-modal="true" aria-label="Conectar WhatsApp">
+
+  <!-- Header -->
+  <div id="qc-header">
+    <div id="qc-logo">
+      <div id="qc-logo-icon">💬</div>
+      <div>
+        <div id="qc-logo-text">Conectar WhatsApp</div>
+        <div id="qc-logo-sub">Número particular via QR Code</div>
+      </div>
+    </div>
+    <button id="qc-close-btn" onclick="qcClose()" aria-label="Fechar">✕</button>
+  </div>
+
+  <!-- Step indicator -->
+  <div id="qc-steps-bar">
+    <div class="qc-step-dot active" id="qc-dot-1">1</div>
+    <div class="qc-step-line" id="qc-line-1"></div>
+    <div class="qc-step-dot" id="qc-dot-2">2</div>
+    <div class="qc-step-line" id="qc-line-2"></div>
+    <div class="qc-step-dot" id="qc-dot-3">3</div>
+  </div>
+  <div class="qc-step-label-row">
+    <span class="qc-step-label active" id="qc-lbl-1">Servidor</span>
+    <span class="qc-step-label" id="qc-lbl-2" style="margin-left:-16px">QR Code</span>
+    <span class="qc-step-label" id="qc-lbl-3">Pronto!</span>
+  </div>
+
+  <!-- Body -->
+  <div id="qc-body">
+
+    <!-- STEP 1: Servidor + API Key -->
+    <div id="qc-step-1" style="display: block;">
+      <div class="qc-info-box">
+        <strong>WhatsApp particular</strong> — conecte qualquer número via QR Code.<br>
+        Precisa de uma <strong>Evolution API</strong> rodando (local ou na nuvem).
+        <span id="qc-no-server-hint" style="display:block;margin-top:6px;font-size:11px">
+          Sem servidor ainda?
+          <a href="https://github.com/EvolutionAPI/evolution-api" target="_blank" style="color:var(--gold)">Ver como instalar grátis em 5 min ›</a>
+        </span>
+      </div>
+
+      <div class="qc-field">
+        <label class="qc-label" for="qc-url-input">URL da Evolution API</label>
+        <input class="qc-input" id="qc-url-input" type="url" placeholder="https://api.seudominio.com ou http://localhost:8080" autocomplete="off" spellcheck="false">
+        <div class="qc-hint">Ex.: <code>http://localhost:8080</code> para instalação local</div>
+      </div>
+
+      <div class="qc-field">
+        <label class="qc-label" for="qc-apikey-input">API Key (Global Key)</label>
+        <div style="position:relative">
+          <input class="qc-input" id="qc-apikey-input" type="password" placeholder="Sua chave do .env — AUTHENTICATION_API_KEY" autocomplete="off" spellcheck="false">
+          <button onclick="qcToggleKey()" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:15px">👁</button>
+        </div>
+        <div class="qc-hint">Definida no arquivo <code>.env</code> do servidor.</div>
+      </div>
+
+      <div class="qc-field">
+        <label class="qc-label" for="qc-inst-input">Nome da instância</label>
+        <input class="qc-input" id="qc-inst-input" type="text" placeholder="lexia" value="lexia" autocomplete="off" spellcheck="false">
+        <div class="qc-hint">Nome livre, sem espaços. Ex.: <code>lexia</code> ou <code>meu-escritorio</code></div>
+      </div>
+
+      <div id="qc-err-msg"></div>
+
+      <button class="qc-btn-primary" id="qc-step1-btn" onclick="qcStep1Next()">
+        <span id="qc-step1-btn-content" style="display:flex;align-items:center;gap:8px">
+          <span>Continuar e Gerar QR Code</span> <span>›</span>
+        </span>
+      </button>
+
+      <button class="qc-btn-ghost" onclick="qcDemoMode()">Apenas testar com demo (sem servidor real)</button>
+    </div>
+
+    <!-- STEP 2: QR Code -->
+    <div id="qc-step-2" style="display:none">
+      <div class="qc-instructions">
+        <ol>
+          <li>Abra o <strong>WhatsApp</strong> no celular</li>
+          <li>Toque em <strong>⋮ → Dispositivos vinculados → Vincular dispositivo</strong><br>
+            <span style="font-size:11px">(iPhone: Ajustes → Dispositivos vinculados)</span></li>
+          <li>Aponte a câmera para o QR Code abaixo</li>
+        </ol>
+      </div>
+
+      <div id="qc-qr-box">
+        <div class="qc-scan-line"></div>
+        <div id="qc-qr-inner">
+          <div style="text-align:center;padding:24px">
+            <div class="qc-spinner"></div>
+            <div style="font-size:12px;color:var(--green);font-weight:600;margin-top:10px">Gerando QR…</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="qc-timer-bar" style="display:none">
+        <div id="qc-timer-fill" style="width:100%"></div>
+      </div>
+      <div id="qc-timer-text"></div>
+
+      <button class="qc-btn-primary" id="qc-renew-btn" style="display:none;width:200px;margin:0 auto" onclick="qcGenerateQR()">
+        🔄 Renovar QR Code
+      </button>
+      <button class="qc-btn-outline" onclick="qcGoBack()">← Voltar</button>
+    </div>
+
+    <!-- STEP 3: Conectado -->
+    <div id="qc-step-3" style="display:none">
+      <div id="qc-success-icon">✅</div>
+      <div id="qc-success-name">WhatsApp Conectado</div>
+      <div id="qc-success-phone">Número vinculado com sucesso</div>
+      <div class="qc-stat-row">
+        <div class="qc-stat-item">
+          <div class="qc-stat-val" id="qc-stat-inst">—</div>
+          <div class="qc-stat-lbl">Instância</div>
+        </div>
+        <div class="qc-stat-item">
+          <div class="qc-stat-val">✓</div>
+          <div class="qc-stat-lbl">Status</div>
+        </div>
+      </div>
+      <button class="qc-btn-primary" onclick="qcFinish()">
+        💬 Ir para Conversas
+      </button>
+      <button class="qc-btn-outline" onclick="qcClose()">Fechar</button>
+    </div>
+
+  </div><!-- /qc-body -->
+</div>
+</div>
 
 <script>
 
@@ -9888,10 +10239,12 @@ function waconnPollStatus() {
 
 function waconnHandleConnected(inst) {
   // Sync with main app
-  if (typeof waConnected !== 'undefined') window.waConnected = true;
+  waConnected = true; window.waConnected = true;
   if (typeof fetchInstanceProfile === 'function') fetchInstanceProfile();
   if (typeof updateWAConnectUI === 'function') updateWAConnectUI();
   if (typeof simulateConnection === 'function') simulateConnection();
+  if (typeof startSyncLoop === 'function') startSyncLoop(); // garante polling ativo
+  setTimeout(() => { setupEvolutionWebhook(); forcePollMessages(); }, 1500); // busca msgs imediata
 
   // Status pill
   const pill = document.getElementById('waconnect-status-pill');
@@ -9982,3 +10335,4 @@ document.getElementById('doc-gen-modal').addEventListener('click', function(e) {
   if (e.target === this) closeDocModal();
 });
 </script>
+</body></html>
