@@ -11292,27 +11292,75 @@ Preencha apenas os campos com informação real. String vazia "" para não infor
       if (btn) { btn.disabled = true; btn.textContent = '⏳ Buscando...'; }
       if (statusEl) statusEl.textContent = '';
 
-      if (!evoCfg?.url || !evoCfg?.apiKey || !evoCfg?.instance) {
+      if (!evoCfg?.url || !evoCfg?.apiKey) {
         if (statusEl) statusEl.style.color = 'var(--red)', statusEl.textContent = '⚠ Servidor não configurado. Reconecte o WhatsApp.';
         if (btn) { btn.disabled = false; btn.textContent = '🔄 Atualizar Agora'; }
         return;
       }
 
-      // Testa conectividade com o servidor
+      // FIX: Se instance estiver vazio, buscar instâncias disponíveis no servidor
+      if (!evoCfg.instance) {
+        try {
+          const listR = await fetch(`${evoCfg.url}/instance/fetchInstances`, {
+            headers: { 'apikey': evoCfg.apiKey }, signal: AbortSignal.timeout(8000)
+          });
+          if (listR.ok) {
+            const listD = await listR.json();
+            const instances = Array.isArray(listD) ? listD : (listD?.data || []);
+            const connected = instances.find(i => i.connectionStatus === 'open' || i.instance?.state === 'open');
+            if (connected) {
+              evoCfg.instance = connected.instance?.instanceName || connected.instanceName || connected.name || '';
+              try { sessionStorage.setItem('evo_cfg', JSON.stringify(evoCfg)); } catch (e) { }
+            }
+          }
+        } catch (e) { }
+      }
+
+      // Testa conectividade e descobre a instância correta via fetchInstances
       try {
+        // Primeiro, lista todas as instâncias para encontrar a conectada
+        const listRes = await fetch(`${evoCfg.url}/instance/fetchInstances`, {
+          headers: { 'apikey': evoCfg.apiKey },
+          signal: AbortSignal.timeout(8000)
+        });
+        if (listRes.ok) {
+          const listData = await listRes.json();
+          const instances = Array.isArray(listData) ? listData : (listData?.data || []);
+          if (statusEl) statusEl.textContent = `ℹ Instâncias no servidor: ${instances.map(i => i.instance?.instanceName || i.instanceName || i.name || '?').join(', ') || 'nenhuma'}`;
+          // Encontra instância com estado 'open'
+          const openInst = instances.find(i => {
+            const st = i.connectionStatus || i.instance?.state || i.state || '';
+            return st === 'open';
+          });
+          if (openInst) {
+            const instName = openInst.instance?.instanceName || openInst.instanceName || openInst.name || '';
+            if (instName && instName !== evoCfg.instance) {
+              // Corrige o nome da instância automaticamente
+              evoCfg.instance = instName;
+              try { sessionStorage.setItem('evo_cfg', JSON.stringify(evoCfg)); } catch (e) { }
+            }
+          } else if (instances.length > 0 && !openInst) {
+            const names = instances.map(i => i.instance?.instanceName || i.instanceName || i.name || '?').join(', ');
+            if (statusEl) statusEl.style.color = 'var(--gold)', statusEl.textContent = `⚠ Instâncias encontradas (${names}) mas nenhuma com estado 'open'. Reconecte o WhatsApp.`;
+            if (btn) { btn.disabled = false; btn.textContent = '🔄 Tentar Novamente'; }
+            return;
+          }
+        }
+
+        // Verifica estado da instância
         const testRes = await fetch(`${evoCfg.url}/instance/connectionState/${evoCfg.instance}`, {
           headers: { 'apikey': evoCfg.apiKey },
           signal: AbortSignal.timeout(8000)
         });
         if (!testRes.ok) {
-          if (statusEl) statusEl.style.color = 'var(--red)', statusEl.textContent = `✗ Erro ${testRes.status} — verifique a API Key e instância.`;
+          if (statusEl) statusEl.style.color = 'var(--red)', statusEl.textContent = `✗ Instância "${evoCfg.instance}" não encontrada (${testRes.status}). Verifique a instância.`;
           if (btn) { btn.disabled = false; btn.textContent = '🔄 Tentar Novamente'; }
           return;
         }
         const state = await testRes.json();
         const connState = state?.instance?.state || state?.state || '';
         if (connState !== 'open') {
-          if (statusEl) statusEl.style.color = 'var(--gold)', statusEl.textContent = `⚠ Instância "${evoCfg.instance}" está: ${connState || 'desconhecida'}. Reconecte.`;
+          if (statusEl) statusEl.style.color = 'var(--gold)', statusEl.textContent = `⚠ Instância "${evoCfg.instance}" está: ${connState || 'desconhecida'}. Reconecte o WhatsApp.`;
           if (btn) { btn.disabled = false; btn.textContent = '🔄 Tentar Novamente'; }
           return;
         }
@@ -11339,8 +11387,9 @@ Preencha apenas os campos com informação real. String vazia "" para não infor
           statusEl.style.color = 'var(--green)';
           statusEl.textContent = added > 0 ? `✓ ${conversations.length} conversa(s) carregada(s)!` : `✓ Atualizado — ${conversations.length} conversa(s).`;
         } else {
+          // Mostra instância usada para diagnóstico
           statusEl.style.color = 'var(--text-muted)';
-          statusEl.textContent = '⚠ API respondeu mas sem conversas. Envie uma mensagem teste ao número.';
+          statusEl.textContent = `⚠ Instância "${evoCfg.instance}" conectada mas sem mensagens. Envie uma mensagem ao número.`;
         }
       }
       if (btn) { btn.disabled = false; btn.textContent = '🔄 Atualizar Agora'; }
@@ -11368,7 +11417,7 @@ Preencha apenas os campos com informação real. String vazia "" para não infor
         const res = await fetch(`${evoCfg.url}/message/findMessages/${evoCfg.instance}`, {
           method: 'POST',
           headers: { 'apikey': evoCfg.apiKey, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ where: { key: { fromMe: false } }, limit: 50 })
+          body: JSON.stringify({ where: {}, limit: 50 })
         });
         if (!res.ok) return;
         const data = await res.json();
