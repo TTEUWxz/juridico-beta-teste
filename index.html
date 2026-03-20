@@ -15052,6 +15052,33 @@ Inclua: quitação mútua, devolução de documentos, ciência das providências
       const _evoKey = localStorage.getItem('lexia_evo_key'); if (_evoKey) EVOLUTION_KEY = _evoKey;
       setTimeout(waconnShowCorrectMode, 300);
 
+      // FIX: Auto-detect if WhatsApp instance is already connected on page load
+      setTimeout(async () => {
+        const _url = EVOLUTION_URL || '';
+        const _key = EVOLUTION_KEY || '';
+        if (!_url || !_key) return;
+        const _userId = (typeof currentUser !== 'undefined' && currentUser?.id)
+          ? currentUser.id.replace(/[^a-zA-Z0-9]/g, '').substring(0, 20) : 'lexia';
+        const _inst = 'lexia-' + _userId;
+        try {
+          const _r = await fetch(_url + '/instance/connectionState/' + _inst, {
+            headers: { 'apikey': _key }, signal: AbortSignal.timeout(8000)
+          });
+          if (_r.ok) {
+            const _d = await _r.json();
+            const _st = _d?.instance?.state || _d?.state || '';
+            if (_st === 'open') {
+              // Populate evoCfg so pollNewMessages works
+              evoCfg = { url: _url, apiKey: _key, instance: _inst, backend: 'baileys' };
+              try { sessionStorage.setItem('evo_cfg', JSON.stringify(evoCfg)); } catch (e) { }
+              waConnected = true;
+              if (typeof updateWAConnectUI === 'function') updateWAConnectUI();
+              if (typeof startSyncLoop === 'function') startSyncLoop();
+            }
+          }
+        } catch (e) { /* silent — server may be sleeping (Render free tier) */ }
+      }, 1500);
+
       // ── Restore Supabase session on page reload ─────────────────────────────────
       if (supaAvailable()) {
         supaGetSession().then(async session => {
@@ -15522,10 +15549,11 @@ Inclua: quitação mútua, devolução de documentos, ciência das providências
     }
 
     function waconnHandleConnected(inst) {
-      // Sync with main app
-      if (typeof waConnected !== 'undefined') window.waConnected = true;
+      // FIX: set the local let variable directly, not window.waConnected
+      waConnected = true;
       if (typeof fetchInstanceProfile === 'function') fetchInstanceProfile();
       if (typeof updateWAConnectUI === 'function') updateWAConnectUI();
+      if (typeof startSyncLoop === 'function') startSyncLoop();
       if (typeof simulateConnection === 'function') simulateConnection();
       // FIX: Busca mensagens imediatamente para popular contatos e conversas
       if (typeof pollNewMessages === 'function') setTimeout(() => pollNewMessages(), 1500);
@@ -16164,13 +16192,12 @@ Inclua: quitação mútua, devolução de documentos, ciência das providências
     }
 
     function qcHandleConnected(inst) {
-      // Sync with main app
-      if (typeof waConnected !== 'undefined') {
-        window.waConnected = true;
-        if (typeof fetchInstanceProfile === 'function') fetchInstanceProfile();
-        if (typeof updateWAConnectUI === 'function') updateWAConnectUI();
-        if (typeof simulateConnection === 'function') simulateConnection();
-      }
+      // FIX: set local let variable, not window.waConnected
+      waConnected = true;
+      if (typeof fetchInstanceProfile === 'function') fetchInstanceProfile();
+      if (typeof updateWAConnectUI === 'function') updateWAConnectUI();
+      if (typeof startSyncLoop === 'function') startSyncLoop();
+      if (typeof simulateConnection === 'function') simulateConnection();
       // Update trigger button
       const tbtn = null; // trigger button removed
       if (tbtn) {
@@ -16644,10 +16671,11 @@ Inclua: quitação mútua, devolução de documentos, ciência das providências
     }
 
     function waconnHandleConnected(inst) {
-      // Sync with main app
-      if (typeof waConnected !== 'undefined') window.waConnected = true;
+      // FIX: set the local let variable, not window.waConnected (which is a different property)
+      waConnected = true;
       if (typeof fetchInstanceProfile === 'function') fetchInstanceProfile();
       if (typeof updateWAConnectUI === 'function') updateWAConnectUI();
+      if (typeof startSyncLoop === 'function') startSyncLoop();
       if (typeof simulateConnection === 'function') simulateConnection();
 
       // Status pill
