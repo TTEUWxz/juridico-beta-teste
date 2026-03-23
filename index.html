@@ -11170,13 +11170,23 @@ Preencha apenas os campos com informação real. String vazia "" para não infor
       // FIX: Sempre verifica/corrige o nome da instância antes de buscar
       await autoDiscoverInstance();
       try {
-        // Busca chats via Evolution API
-        const res = await fetch(`${evoCfg.url}/chat/findChats/${evoCfg.instance}`, {
-          method: 'POST',
-          headers: { 'apikey': evoCfg.apiKey, 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
-        });
-        if (!res.ok) { await syncMessageCountsFallback(); return; }
+        // Tenta todos os endpoints de chat conhecidos (v1 = POST findChats, v2 = GET fetchChats)
+        let chatRes = null;
+        const chatEndpoints = [
+          { url: `${evoCfg.url}/chat/fetchChats/${evoCfg.instance}`, method: 'GET', body: null },
+          { url: `${evoCfg.url}/chat/findChats/${evoCfg.instance}`, method: 'GET', body: null },
+          { url: `${evoCfg.url}/chat/findChats/${evoCfg.instance}`, method: 'POST', body: '{}' },
+        ];
+        for (const ep of chatEndpoints) {
+          try {
+            const opts = { method: ep.method, headers: { 'apikey': evoCfg.apiKey, 'Content-Type': 'application/json' } };
+            if (ep.body) opts.body = ep.body;
+            const r = await fetch(ep.url, opts);
+            if (r.ok) { chatRes = r; break; }
+          } catch(e) {}
+        }
+        const res = chatRes;
+        if (!res || !res.ok) { await syncMessageCountsFallback(); return; }
         const chats = await res.json();
         const chatList = Array.isArray(chats) ? chats : (chats?.chats || chats?.data || []);
 
@@ -11348,23 +11358,40 @@ Preencha apenas os campos com informação real. String vazia "" para não infor
         } catch(e) { log += `🔌 connectionState: ERRO — ${e.message}\n\n`; }
       }
 
-      // Teste 3: findChats
-      try {
-        const r = await fetch(url + '/chat/findChats/' + inst, { method: 'POST', headers: { 'apikey': key, 'Content-Type': 'application/json' }, body: '{}', signal: AbortSignal.timeout(8000) });
-        const d = await r.json();
-        const chats = Array.isArray(d) ? d : (d?.chats || d?.data || []);
-        log += `💬 findChats (${r.status}): ${chats.length} chat(s)\n${chats.slice(0,3).map(c => `  • ${c.id||c.remoteJid||'?'} — ${c.name||c.pushName||''}`).join('\n')}\n\n`;
-      } catch(e) { log += `💬 findChats: ERRO — ${e.message}\n\n`; }
+      // Teste 3: findChats / fetchChats (v1 e v2)
+      const chatEndpointTests = [
+        { label: 'fetchChats (GET)', url: url + '/chat/fetchChats/' + inst, method: 'GET' },
+        { label: 'findChats (POST)', url: url + '/chat/findChats/' + inst, method: 'POST', body: '{}' },
+      ];
+      for (const ep of chatEndpointTests) {
+        try {
+          const opts = { method: ep.method, headers: { 'apikey': key, 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(8000) };
+          if (ep.body) opts.body = ep.body;
+          const r = await fetch(ep.url, opts);
+          const d = await r.json();
+          const chats = Array.isArray(d) ? d : (d?.chats || d?.data || []);
+          log += `💬 ${ep.label} (${r.status}): ${chats.length} chat(s)\n${chats.slice(0,3).map(c => `  • ${c.id||c.remoteJid||'?'} — ${c.name||c.pushName||''}`).join('\n') || (r.ok ? '  (vazio)' : '  Raw: ' + JSON.stringify(d).substring(0,120))}\n\n`;
+          if (r.ok && chats.length > 0) break;
+        } catch(e) { log += `💬 ${ep.label}: ERRO — ${e.message}\n\n`; }
+      }
 
-      // Teste 4: findMessages
-      try {
-        const r = await fetch(url + '/message/findMessages/' + inst, { method: 'POST', headers: { 'apikey': key, 'Content-Type': 'application/json' }, body: JSON.stringify({ where: {}, limit: 5 }), signal: AbortSignal.timeout(8000) });
-        const d = await r.json();
-        const msgs = Array.isArray(d) ? d : (d?.messages?.records || d?.data || []);
-        log += `📨 findMessages (${r.status}): ${msgs.length} mensagem(ns)\n${msgs.length > 0 ? '  Primeira: ' + JSON.stringify(msgs[0]).substring(0, 200) : '  (vazio — mensagens não estão sendo salvas no banco)'}\n\n`;
-        // Se vazio, mostra resposta raw
-        if (msgs.length === 0) log += `  Raw: ${JSON.stringify(d).substring(0, 200)}\n\n`;
-      } catch(e) { log += `📨 findMessages: ERRO — ${e.message}\n\n`; }
+      // Teste 4: findMessages / fetchMessages (v1 e v2)
+      const msgEndpointTests = [
+        { label: 'fetchMessages (GET)', url: url + '/message/fetchMessages/' + inst + '?page=1&offset=5', method: 'GET' },
+        { label: 'findMessages (GET)', url: url + '/message/findMessages/' + inst + '?limit=5', method: 'GET' },
+        { label: 'findMessages (POST)', url: url + '/message/findMessages/' + inst, method: 'POST', body: JSON.stringify({ where: {}, limit: 5 }) },
+      ];
+      for (const ep of msgEndpointTests) {
+        try {
+          const opts = { method: ep.method, headers: { 'apikey': key, 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(8000) };
+          if (ep.body) opts.body = ep.body;
+          const r = await fetch(ep.url, opts);
+          const d = await r.json();
+          const msgs = Array.isArray(d) ? d : (d?.messages?.records || d?.messages || d?.data || d?.records || []);
+          log += `📨 ${ep.label} (${r.status}): ${msgs.length} msg(s)\n${msgs.length > 0 ? '  ✅ ENDPOINT FUNCIONA! 1ª msg: ' + JSON.stringify(msgs[0]).substring(0, 150) : '  Raw: ' + JSON.stringify(d).substring(0, 120)}\n\n`;
+          if (r.ok && msgs.length > 0) break;
+        } catch(e) { log += `📨 ${ep.label}: ERRO — ${e.message}\n\n`; }
+      }
 
       if (statusEl) { statusEl.style.color = 'var(--text)'; statusEl.textContent = log; }
       if (btn) { btn.disabled = false; btn.textContent = '🔍 Diagnosticar API'; }
@@ -11522,15 +11549,17 @@ Preencha apenas os campos com informação real. String vazia "" para não infor
     async function pollNewMessages() {
       if (!evoCfg?.url || !evoCfg?.apiKey || !evoCfg?.instance) return;
       try {
-        // Tenta múltiplos formatos de endpoint/body para compatibilidade com Evolution API v1 e v2
+        // Tenta todos os endpoints conhecidos de todas as versões da Evolution API
         let msgs = [];
         const endpoints = [
-          // Evolution API v1 / v2 — findMessages
-          { url: `${evoCfg.url}/message/findMessages/${evoCfg.instance}`, method: 'POST', body: JSON.stringify({ where: {}, limit: 50 }) },
-          // Sem body
-          { url: `${evoCfg.url}/message/findMessages/${evoCfg.instance}`, method: 'POST', body: JSON.stringify({ limit: 50 }) },
-          // GET variant
+          // Evolution API v2 — fetchMessages (GET, versão mais recente)
+          { url: `${evoCfg.url}/message/fetchMessages/${evoCfg.instance}?page=1&offset=40`, method: 'GET', body: null },
+          // Evolution API v2 — findMessages GET
           { url: `${evoCfg.url}/message/findMessages/${evoCfg.instance}?limit=50`, method: 'GET', body: null },
+          // Evolution API v1 — findMessages POST com where
+          { url: `${evoCfg.url}/message/findMessages/${evoCfg.instance}`, method: 'POST', body: JSON.stringify({ where: {}, limit: 50 }) },
+          // Evolution API v1 — findMessages POST paginado
+          { url: `${evoCfg.url}/message/findMessages/${evoCfg.instance}`, method: 'POST', body: JSON.stringify({ page: 1, offset: 40 }) },
         ];
 
         let rawData = null;
