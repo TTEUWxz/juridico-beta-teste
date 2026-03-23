@@ -11135,7 +11135,37 @@ Preencha apenas os campos com informação real. String vazia "" para não infor
     // =============================================
     let syncInterval = null;
 
+    // Auto-descobre instância conectada no servidor e atualiza evoCfg
+    async function autoDiscoverInstance() {
+      if (!evoCfg?.url || !evoCfg?.apiKey) return false;
+      try {
+        const r = await fetch(`${evoCfg.url}/instance/fetchInstances`, {
+          headers: { 'apikey': evoCfg.apiKey }, signal: AbortSignal.timeout(8000)
+        });
+        if (!r.ok) return false;
+        const list = await r.json();
+        const instances = Array.isArray(list) ? list : (list?.data || []);
+        console.log('[LexIA] fetchInstances:', instances.map(i => `${i.instance?.instanceName||i.instanceName||i.name}(${i.connectionStatus||i.instance?.state||i.state})`).join(', '));
+        const open = instances.find(i => {
+          const st = i.connectionStatus || i.instance?.state || i.state || '';
+          return st === 'open';
+        });
+        if (open) {
+          const name = open.instance?.instanceName || open.instanceName || open.name || '';
+          if (name && name !== evoCfg.instance) {
+            console.log(`[LexIA] Corrigindo instância: "${evoCfg.instance}" → "${name}"`);
+            evoCfg.instance = name;
+            try { sessionStorage.setItem('evo_cfg', JSON.stringify(evoCfg)); } catch(e) {}
+          }
+          return true;
+        }
+        return false;
+      } catch(e) { return false; }
+    }
+
     async function syncMessageCounts() {
+      // FIX: Sempre verifica/corrige o nome da instância antes de buscar
+      await autoDiscoverInstance();
       try {
         // Busca chats via Evolution API
         const res = await fetch(`${evoCfg.url}/chat/findChats/${evoCfg.instance}`, {
@@ -11395,10 +11425,22 @@ Preencha apenas os campos com informação real. String vazia "" para não infor
       if (btn) { btn.disabled = false; btn.textContent = '🔄 Atualizar Agora'; }
     }
 
-    // Sincronização periódica a cada 30s
-    // ── Last seen timestamps per conversation ───────────────────
+    // ── Persistência local de mensagens (sobrevive a restarts do Render) ────────────
     var lastMsgTimestamps = {};
     var msgPollInterval = null;
+
+    // Salva timestamps no localStorage para não re-processar mensagens entre reloads
+    function saveMsgTimestamps() {
+      try { localStorage.setItem('lexia_msg_ts', JSON.stringify(lastMsgTimestamps)); } catch(e) {}
+    }
+    function loadMsgTimestamps() {
+      try {
+        const saved = localStorage.getItem('lexia_msg_ts');
+        if (saved) lastMsgTimestamps = JSON.parse(saved);
+      } catch(e) {}
+    }
+    // Carrega timestamps ao iniciar
+    loadMsgTimestamps();
 
     function startSyncLoop() {
       clearInterval(syncInterval);
@@ -11414,14 +11456,60 @@ Preencha apenas os campos com informação real. String vazia "" para não infor
     async function pollNewMessages() {
       if (!evoCfg?.url || !evoCfg?.apiKey || !evoCfg?.instance) return;
       try {
-        const res = await fetch(`${evoCfg.url}/message/findMessages/${evoCfg.instance}`, {
-          method: 'POST',
-          headers: { 'apikey': evoCfg.apiKey, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ where: {}, limit: 50 })
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        const msgs = Array.isArray(data) ? data : (data?.messages?.records || data?.data || []);
+        // Tenta múltiplos formatos de endpoint/body para compatibilidade com Evolution API v1 e v2
+        let msgs = [];
+        const endpoints = [
+          // Evolution API v1 / v2 — findMessages
+          { url: `${evoCfg.url}/message/findMessages/${evoCfg.instance}`, method: 'POST', body: JSON.stringify({ where: {}, limit: 50 }) },
+          // Sem body
+          { url: `${evoCfg.url}/message/findMessages/${evoCfg.instance}`, method: 'POST', body: JSON.stringify({ limit: 50 }) },
+          // GET variant
+          { url: `${evoCfg.url}/message/findMessages/${evoCfg.instance}?limit=50`, method: 'GET', body: null },
+        ];
+
+        let rawData = null;
+        for (const ep of endpoints) {
+          try {
+            const fetchOpts = { method: ep.method, headers: { 'apikey': evoCfg.apiKey, 'Content-Type': 'application/json' } };
+            if (ep.body) fetchOpts.body = ep.body;
+            const res = await fetch(ep.url, fetchOpts);
+            if (!res.ok) {
+              // Log erros HTTP para diagnóstico
+              const errText = await res.text().catch(() => '');
+              console.warn(`[LexIA] pollNewMessages ${ep.url} → HTTP ${res.status}:`, errText.substring(0, 200));
+              continue;
+            }
+            rawData = await res.json();
+            // Extrai array de mensagens do formato da resposta
+            msgs = Array.isArray(rawData) ? rawData
+              : (rawData?.messages?.records || rawData?.messages || rawData?.data || rawData?.records || []);
+            if (msgs.length > 0) break; // encontrou mensagens — para de tentar
+          } catch (ep_err) {
+            console.warn('[LexIA] pollNewMessages endpoint error:', ep_err.message);
+          }
+        }
+
+        // Se ainda vazio, tenta /chat/findChats como fallback de contatos
+        if (msgs.length === 0) {
+          try {
+            const chatRes = await fetch(`${evoCfg.url}/chat/findChats/${evoCfg.instance}`, {
+              method: 'POST',
+              headers: { 'apikey': evoCfg.apiKey, 'Content-Type': 'application/json' },
+              body: JSON.stringify({})
+            });
+            if (chatRes.ok) {
+              const chatData = await chatRes.json();
+              const chats = Array.isArray(chatData) ? chatData : (chatData?.chats || chatData?.data || []);
+              console.log(`[LexIA] findChats retornou ${chats.length} chats:`, JSON.stringify(chats).substring(0, 300));
+              if (chats.length > 0) importRealChats(chats);
+            }
+          } catch (e2) { console.warn('[LexIA] findChats error:', e2.message); }
+          console.log('[LexIA] pollNewMessages: sem mensagens no servidor. rawData:', JSON.stringify(rawData).substring(0, 300));
+          return;
+        }
+
+        console.log(`[LexIA] pollNewMessages: ${msgs.length} mensagens recebidas`);
+        const data = rawData;
 
         msgs.forEach(m => {
           const text = m.message?.conversation
@@ -11439,6 +11527,7 @@ Preencha apenas os campos com informação real. String vazia "" para não infor
           // Skip if we've already processed this message
           if (lastMsgTimestamps[tsKey] && ts <= lastMsgTimestamps[tsKey]) return;
           lastMsgTimestamps[tsKey] = ts;
+          saveMsgTimestamps(); // persiste no localStorage
 
           // Find or create conversation
           let conv = conversations.find(c => c.id === rawPhone || c.phone === '+' + rawPhone);
@@ -15492,33 +15581,69 @@ Inclua: quitação mútua, devolução de documentos, ciência das providências
       const key = evoCfg?.apiKey || '';
       const inst = evoCfg?.instance || 'lexia';
 
+      // Helper: atualiza texto do spinner
+      const setSpinnerText = (txt) => {
+        const innerEl = document.getElementById('waconn-qr-inner') || box.querySelector('div:not(.qr-scan-line)');
+        if (innerEl) innerEl.innerHTML = '<div style="text-align:center;padding:24px;"><div class="btn-spinner" style="width:32px;height:32px;border-width:3px;margin:0 auto 12px;border-color:rgba(37,211,102,0.2);border-top-color:var(--green);"></div><div style="font-size:12px;color:var(--green);font-weight:600;">' + txt + '</div></div>';
+      };
+
       try {
-        fetch(url + '/instance/create', {
-          method: 'POST',
-          headers: { 'apikey': key, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ instanceName: inst, qrcode: true, integration: 'WHATSAPP-BAILEYS' })
-        }).catch(() => { });
-
-        await new Promise(r => setTimeout(r, 800));
-
-        const r = await fetch(url + '/instance/connect/' + inst, {
-          headers: { 'apikey': key },
-          signal: AbortSignal.timeout(15000)
-        });
-
-        if (!r.ok) {
-          const e = await r.json().catch(() => ({}));
-          waconnQRError('Erro ' + r.status + ': ' + (e.message || 'Verifique instância e API Key.'));
-          return;
-        }
-        const data = await r.json();
-        const b64 = data?.base64 || data?.qrcode?.base64 || data?.qr;
-
-        if (data?.instance?.state === 'open' || data?.state === 'open') {
-          waconnHandleConnected(inst);
-          return;
+        // PASSO 1: Criar instância com AWAIT (era fire-and-forget, causava 404)
+        setSpinnerText('Criando instância…');
+        try {
+          const createRes = await fetch(url + '/instance/create', {
+            method: 'POST',
+            headers: { 'apikey': key, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ instanceName: inst, qrcode: true, integration: 'WHATSAPP-BAILEYS' }),
+            signal: AbortSignal.timeout(25000)
+          });
+          const cData = await createRes.json().catch(() => ({}));
+          if (!createRes.ok && createRes.status !== 409) {
+            console.warn('[LexIA] /instance/create:', createRes.status, JSON.stringify(cData).substring(0, 120));
+          }
+        } catch (createErr) {
+          console.warn('[LexIA] create (continuando):', createErr.message);
         }
 
+        // PASSO 2: Conectar / obter QR com retry automático (3 tentativas)
+        let connectData = null;
+        let lastErr = '';
+        for (let attempt = 0; attempt < 3; attempt++) {
+          if (attempt > 0) {
+            setSpinnerText('Tentativa ' + (attempt + 1) + '/3…');
+            await new Promise(r => setTimeout(r, 2500));
+          } else {
+            setSpinnerText('Gerando QR Code…');
+          }
+          try {
+            const r = await fetch(url + '/instance/connect/' + inst, {
+              headers: { 'apikey': key },
+              signal: AbortSignal.timeout(15000)
+            });
+            if (r.ok) { connectData = await r.json(); break; }
+            const eJson = await r.json().catch(() => ({}));
+            lastErr = 'HTTP ' + r.status + ': ' + (eJson?.message || eJson?.error || 'Verifique instância e API Key.');
+            if (r.status === 404 && attempt < 2) {
+              setSpinnerText('Instância não encontrada. Recriando…');
+              await fetch(url + '/instance/create', {
+                method: 'POST',
+                headers: { 'apikey': key, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ instanceName: inst, qrcode: true, integration: 'WHATSAPP-BAILEYS' }),
+                signal: AbortSignal.timeout(25000)
+              }).catch(() => {});
+            }
+          } catch (connErr) {
+            lastErr = (connErr.name === 'AbortError' || connErr.name === 'TimeoutError')
+              ? 'Tempo esgotado — servidor lento. Tente novamente.'
+              : connErr.message;
+          }
+        }
+
+        if (!connectData) { waconnQRError(lastErr || 'Falha ao conectar. Tente novamente.'); return; }
+        if (connectData?.instance?.state === 'open' || connectData?.state === 'open') {
+          waconnHandleConnected(inst); return;
+        }
+        const b64 = connectData?.base64 || connectData?.qrcode?.base64 || connectData?.qr;
         if (b64) {
           const src = b64.startsWith('data:') ? b64 : 'data:image/png;base64,' + b64;
           if (sl) sl.style.display = 'block';
@@ -15527,10 +15652,10 @@ Inclua: quitação mútua, devolução de documentos, ciência das providências
           waconnStartCountdown();
           waconnPollStatus();
         } else {
-          waconnQRError('QR Code não retornado. Verifique se a instância está pronta.');
+          waconnQRError('QR não retornado. Resposta: ' + JSON.stringify(connectData).substring(0, 120));
         }
       } catch (e) {
-        waconnQRError(e.name === 'AbortError' || e.name === 'TimeoutError'
+        waconnQRError((e.name === 'AbortError' || e.name === 'TimeoutError')
           ? 'Tempo esgotado. Servidor demorou demais para responder.'
           : 'Erro: ' + e.message);
       }
@@ -16614,33 +16739,69 @@ Inclua: quitação mútua, devolução de documentos, ciência das providências
       const key = evoCfg?.apiKey || '';
       const inst = evoCfg?.instance || 'lexia';
 
+      // Helper: atualiza texto do spinner
+      const setSpinnerText = (txt) => {
+        const innerEl = document.getElementById('waconn-qr-inner') || box.querySelector('div:not(.qr-scan-line)');
+        if (innerEl) innerEl.innerHTML = '<div style="text-align:center;padding:24px;"><div class="btn-spinner" style="width:32px;height:32px;border-width:3px;margin:0 auto 12px;border-color:rgba(37,211,102,0.2);border-top-color:var(--green);"></div><div style="font-size:12px;color:var(--green);font-weight:600;">' + txt + '</div></div>';
+      };
+
       try {
-        fetch(url + '/instance/create', {
-          method: 'POST',
-          headers: { 'apikey': key, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ instanceName: inst, qrcode: true, integration: 'WHATSAPP-BAILEYS' })
-        }).catch(() => { });
-
-        await new Promise(r => setTimeout(r, 800));
-
-        const r = await fetch(url + '/instance/connect/' + inst, {
-          headers: { 'apikey': key },
-          signal: AbortSignal.timeout(15000)
-        });
-
-        if (!r.ok) {
-          const e = await r.json().catch(() => ({}));
-          waconnQRError('Erro ' + r.status + ': ' + (e.message || 'Verifique instância e API Key.'));
-          return;
-        }
-        const data = await r.json();
-        const b64 = data?.base64 || data?.qrcode?.base64 || data?.qr;
-
-        if (data?.instance?.state === 'open' || data?.state === 'open') {
-          waconnHandleConnected(inst);
-          return;
+        // PASSO 1: Criar instância com AWAIT (era fire-and-forget, causava 404)
+        setSpinnerText('Criando instância…');
+        try {
+          const createRes = await fetch(url + '/instance/create', {
+            method: 'POST',
+            headers: { 'apikey': key, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ instanceName: inst, qrcode: true, integration: 'WHATSAPP-BAILEYS' }),
+            signal: AbortSignal.timeout(25000)
+          });
+          const cData = await createRes.json().catch(() => ({}));
+          if (!createRes.ok && createRes.status !== 409) {
+            console.warn('[LexIA] /instance/create:', createRes.status, JSON.stringify(cData).substring(0, 120));
+          }
+        } catch (createErr) {
+          console.warn('[LexIA] create (continuando):', createErr.message);
         }
 
+        // PASSO 2: Conectar / obter QR com retry automático (3 tentativas)
+        let connectData = null;
+        let lastErr = '';
+        for (let attempt = 0; attempt < 3; attempt++) {
+          if (attempt > 0) {
+            setSpinnerText('Tentativa ' + (attempt + 1) + '/3…');
+            await new Promise(r => setTimeout(r, 2500));
+          } else {
+            setSpinnerText('Gerando QR Code…');
+          }
+          try {
+            const r = await fetch(url + '/instance/connect/' + inst, {
+              headers: { 'apikey': key },
+              signal: AbortSignal.timeout(15000)
+            });
+            if (r.ok) { connectData = await r.json(); break; }
+            const eJson = await r.json().catch(() => ({}));
+            lastErr = 'HTTP ' + r.status + ': ' + (eJson?.message || eJson?.error || 'Verifique instância e API Key.');
+            if (r.status === 404 && attempt < 2) {
+              setSpinnerText('Instância não encontrada. Recriando…');
+              await fetch(url + '/instance/create', {
+                method: 'POST',
+                headers: { 'apikey': key, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ instanceName: inst, qrcode: true, integration: 'WHATSAPP-BAILEYS' }),
+                signal: AbortSignal.timeout(25000)
+              }).catch(() => {});
+            }
+          } catch (connErr) {
+            lastErr = (connErr.name === 'AbortError' || connErr.name === 'TimeoutError')
+              ? 'Tempo esgotado — servidor lento. Tente novamente.'
+              : connErr.message;
+          }
+        }
+
+        if (!connectData) { waconnQRError(lastErr || 'Falha ao conectar. Tente novamente.'); return; }
+        if (connectData?.instance?.state === 'open' || connectData?.state === 'open') {
+          waconnHandleConnected(inst); return;
+        }
+        const b64 = connectData?.base64 || connectData?.qrcode?.base64 || connectData?.qr;
         if (b64) {
           const src = b64.startsWith('data:') ? b64 : 'data:image/png;base64,' + b64;
           if (sl) sl.style.display = 'block';
@@ -16649,10 +16810,10 @@ Inclua: quitação mútua, devolução de documentos, ciência das providências
           waconnStartCountdown();
           waconnPollStatus();
         } else {
-          waconnQRError('QR Code não retornado. Verifique se a instância está pronta.');
+          waconnQRError('QR não retornado. Resposta: ' + JSON.stringify(connectData).substring(0, 120));
         }
       } catch (e) {
-        waconnQRError(e.name === 'AbortError' || e.name === 'TimeoutError'
+        waconnQRError((e.name === 'AbortError' || e.name === 'TimeoutError')
           ? 'Tempo esgotado. Servidor demorou demais para responder.'
           : 'Erro: ' + e.message);
       }
