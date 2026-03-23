@@ -10095,7 +10095,10 @@ Preencha apenas os campos com informação real. String vazia "" para não infor
         <button onclick="manualRefreshConversations(this)" style="margin-top:4px;padding:8px 18px;background:var(--whatsapp);border:none;border-radius:8px;color:#000;font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">
           🔄 Atualizar Agora
         </button>
-        <div id="wa-sync-status" style="font-size:11px;color:var(--text-dim);min-height:14px;"></div>
+        <button onclick="diagEvolutionAPI(this)" style="padding:6px 14px;background:rgba(74,143,232,0.15);border:1px solid rgba(74,143,232,0.3);border-radius:8px;color:var(--blue,#4a8fe8);font-family:'Outfit',sans-serif;font-size:11px;cursor:pointer;">
+          🔍 Diagnosticar API
+        </button>
+        <div id="wa-sync-status" style="font-size:11px;color:var(--text-dim);min-height:14px;text-align:left;width:100%;word-break:break-all;white-space:pre-wrap;"></div>
       </div>`;
         return;
       }
@@ -11316,6 +11319,57 @@ Preencha apenas os campos com informação real. String vazia "" para não infor
       }
     }
 
+    // Diagnóstico completo — mostra resposta RAW de cada endpoint da API
+    async function diagEvolutionAPI(btn) {
+      const statusEl = document.getElementById('wa-sync-status');
+      if (btn) { btn.disabled = true; btn.textContent = '⏳ Diagnosticando…'; }
+      if (statusEl) { statusEl.style.color = 'var(--text-muted)'; statusEl.textContent = '🔍 Testando API…'; }
+
+      const url = evoCfg?.url || EVOLUTION_URL || '';
+      const key = evoCfg?.apiKey || EVOLUTION_KEY || '';
+      const inst = evoCfg?.instance || '';
+
+      let log = `🔧 Config:\nURL: ${url}\nInstância: ${inst || '(vazio)'}\n\n`;
+
+      // Teste 1: lista instâncias
+      try {
+        const r = await fetch(url + '/instance/fetchInstances', { headers: { 'apikey': key }, signal: AbortSignal.timeout(8000) });
+        const d = await r.json();
+        const list = Array.isArray(d) ? d : (d?.data || []);
+        log += `📋 fetchInstances (${r.status}):\n${list.map(i => `  • ${i.instance?.instanceName||i.instanceName||i.name||'?'} → ${i.connectionStatus||i.instance?.state||i.state||'?'}`).join('\n') || '  (vazio)'}\n\n`;
+      } catch(e) { log += `📋 fetchInstances: ERRO — ${e.message}\n\n`; }
+
+      // Teste 2: estado da instância
+      if (inst) {
+        try {
+          const r = await fetch(url + '/instance/connectionState/' + inst, { headers: { 'apikey': key }, signal: AbortSignal.timeout(8000) });
+          const d = await r.json();
+          log += `🔌 connectionState (${r.status}):\n  ${JSON.stringify(d).substring(0, 200)}\n\n`;
+        } catch(e) { log += `🔌 connectionState: ERRO — ${e.message}\n\n`; }
+      }
+
+      // Teste 3: findChats
+      try {
+        const r = await fetch(url + '/chat/findChats/' + inst, { method: 'POST', headers: { 'apikey': key, 'Content-Type': 'application/json' }, body: '{}', signal: AbortSignal.timeout(8000) });
+        const d = await r.json();
+        const chats = Array.isArray(d) ? d : (d?.chats || d?.data || []);
+        log += `💬 findChats (${r.status}): ${chats.length} chat(s)\n${chats.slice(0,3).map(c => `  • ${c.id||c.remoteJid||'?'} — ${c.name||c.pushName||''}`).join('\n')}\n\n`;
+      } catch(e) { log += `💬 findChats: ERRO — ${e.message}\n\n`; }
+
+      // Teste 4: findMessages
+      try {
+        const r = await fetch(url + '/message/findMessages/' + inst, { method: 'POST', headers: { 'apikey': key, 'Content-Type': 'application/json' }, body: JSON.stringify({ where: {}, limit: 5 }), signal: AbortSignal.timeout(8000) });
+        const d = await r.json();
+        const msgs = Array.isArray(d) ? d : (d?.messages?.records || d?.data || []);
+        log += `📨 findMessages (${r.status}): ${msgs.length} mensagem(ns)\n${msgs.length > 0 ? '  Primeira: ' + JSON.stringify(msgs[0]).substring(0, 200) : '  (vazio — mensagens não estão sendo salvas no banco)'}\n\n`;
+        // Se vazio, mostra resposta raw
+        if (msgs.length === 0) log += `  Raw: ${JSON.stringify(d).substring(0, 200)}\n\n`;
+      } catch(e) { log += `📨 findMessages: ERRO — ${e.message}\n\n`; }
+
+      if (statusEl) { statusEl.style.color = 'var(--text)'; statusEl.textContent = log; }
+      if (btn) { btn.disabled = false; btn.textContent = '🔍 Diagnosticar API'; }
+    }
+
     // Atualização manual com feedback visual e diagnóstico
     async function manualRefreshConversations(btn) {
       const statusEl = document.getElementById('wa-sync-status');
@@ -11445,11 +11499,23 @@ Preencha apenas os campos com informação real. String vazia "" para não infor
     function startSyncLoop() {
       clearInterval(syncInterval);
       clearInterval(msgPollInterval);
-      // FIX: Chama imediatamente ao conectar para popular a lista sem esperar os intervalos
+
+      // Chama imediatamente + polling agressivo nos primeiros 60s após conectar
+      // (Baileys precisa de tempo para sincronizar o histórico do WhatsApp)
+      syncMessageCounts();
       pollNewMessages();
-      // Stats sync every 30s
+
+      let aggressiveCount = 0;
+      const aggressiveInterval = setInterval(() => {
+        aggressiveCount++;
+        pollNewMessages();
+        if (aggressiveCount >= 10) { // 10x a cada 3s = 30 segundos de polling agressivo
+          clearInterval(aggressiveInterval);
+        }
+      }, 3000);
+
+      // Polling normal a cada 8s (após o agressivo terminar)
       syncInterval = setInterval(() => { if (waConnected) syncMessageCounts(); }, 30000);
-      // Message polling every 8s
       msgPollInterval = setInterval(() => { if (waConnected) pollNewMessages(); }, 8000);
     }
 
@@ -15727,10 +15793,19 @@ Inclua: quitação mútua, devolução de documentos, ciência das providências
       waConnected = true;
       if (typeof fetchInstanceProfile === 'function') fetchInstanceProfile();
       if (typeof updateWAConnectUI === 'function') updateWAConnectUI();
-      if (typeof startSyncLoop === 'function') startSyncLoop();
       if (typeof simulateConnection === 'function') simulateConnection();
-      // FIX: Busca mensagens imediatamente para popular contatos e conversas
-      if (typeof pollNewMessages === 'function') setTimeout(() => pollNewMessages(), 1500);
+
+      // Mostra status de sincronização no painel WhatsApp
+      const syncStatus = document.getElementById('wa-sync-status');
+      if (syncStatus) {
+        syncStatus.style.color = 'var(--green)';
+        syncStatus.textContent = '⟳ Sincronizando histórico… (pode levar até 30s)';
+      }
+
+      // Inicia loop de sincronização após 2s para o Baileys terminar a sync inicial
+      setTimeout(() => {
+        if (typeof startSyncLoop === 'function') startSyncLoop();
+      }, 2000);
 
       // Show connected card, hide QR screen
       const qrScreen = document.getElementById('waconn-qr-screen');
